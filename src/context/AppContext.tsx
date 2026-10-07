@@ -45,7 +45,9 @@ interface AppContextType {
   closeOnboarding: () => void;
 
   isCreateEventOpen: boolean;
+  eventToEdit: EventItem | null;
   openCreateEvent: () => void;
+  openEditEvent: (event: EventItem) => void;
   closeCreateEvent: () => void;
 
   selectedEventForDetail: EventItem | null;
@@ -92,6 +94,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [authModalReason, setAuthModalReason] = useState<string>('');
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
   const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
+  const [eventToEdit, setEventToEdit] = useState<EventItem | null>(null);
   const [selectedEventForDetail, setSelectedEventForDetail] = useState<EventItem | null>(null);
   const [clashInfo, setClashInfo] = useState<ClashInfo | null>(null);
   const [externalRegEvent, setExternalRegEvent] = useState<EventItem | null>(null);
@@ -141,10 +144,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           .order('date', { ascending: true })
           .then(({ data, error }) => {
             if (data) {
-              setEvents(data as EventItem[]);
-              localStorage.setItem(LOCAL_STORAGE_EVENTS_KEY, JSON.stringify(data));
+              const mappedEvents: EventItem[] = (data as any[]).map((ev) => ({
+                ...ev,
+                is_tentative:
+                  ev.status === 'Tentative' ||
+                  ev.time_start_end?.includes('Tentative') ||
+                  ev.requirements_eligibility?.includes('[TENTATIVE]'),
+              }));
+              setEvents(mappedEvents);
+              localStorage.setItem(LOCAL_STORAGE_EVENTS_KEY, JSON.stringify(mappedEvents));
               // Dynamic notifications based on actual campus events
-              const notifs: NotificationItem[] = (data as EventItem[])
+              const notifs: NotificationItem[] = mappedEvents
                 .filter((ev) => ev.registration_deadline)
                 .map((ev) => ({
                   id: `notif-${ev.id}`,
@@ -261,10 +271,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       openAuthModal('Sign in with your FLAME email to post events.');
       return;
     }
+    setEventToEdit(null);
     setIsCreateEventOpen(true);
   };
 
-  const closeCreateEvent = () => setIsCreateEventOpen(false);
+  const openEditEvent = (evt: EventItem) => {
+    setEventToEdit(evt);
+    setIsCreateEventOpen(true);
+  };
+
+  const closeCreateEvent = () => {
+    setIsCreateEventOpen(false);
+    setEventToEdit(null);
+  };
 
   const openEventDetail = (event: EventItem) => setSelectedEventForDetail(event);
   const closeEventDetail = () => setSelectedEventForDetail(null);
@@ -595,7 +614,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     saveEventsToStorage(updated);
 
     if (isSupabaseConfigured()) {
-      supabase.from('events').insert([newEvent]).then();
+      const { is_tentative, tentative_note, ...cleanPayload } = newEvent;
+      supabase.from('events').insert([cleanPayload]).then(({ error }) => {
+        if (error) console.error('Supabase createEvent error:', error);
+      });
     }
   };
 
@@ -603,14 +625,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const updated = events.map((e) => (e.id === eventId ? { ...e, ...eventData } : e));
     saveEventsToStorage(updated);
 
+    if (selectedEventForDetail?.id === eventId) {
+      setSelectedEventForDetail((prev) => (prev ? { ...prev, ...eventData } : null));
+    }
+
     if (isSupabaseConfigured()) {
-      supabase.from('events').update(eventData).eq('id', eventId).then();
+      const { is_tentative, tentative_note, ...cleanPayload } = eventData;
+      supabase.from('events').update(cleanPayload).eq('id', eventId).then(({ error }) => {
+        if (error) console.error('Supabase updateEvent error:', error);
+      });
     }
   };
 
   const deleteEvent = (eventId: string) => {
     const updated = events.filter((e) => e.id !== eventId);
     saveEventsToStorage(updated);
+    if (selectedEventForDetail?.id === eventId) {
+      setSelectedEventForDetail(null);
+    }
     if (user) {
       updateProfile({
         saved_events: user.saved_events.filter((id) => id !== eventId),
@@ -619,7 +651,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
 
     if (isSupabaseConfigured()) {
-      supabase.from('events').delete().eq('id', eventId).then();
+      supabase.from('events').delete().eq('id', eventId).then(({ error }) => {
+        if (error) console.error('Supabase deleteEvent error:', error);
+      });
     }
   };
 
@@ -650,7 +684,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         openOnboarding,
         closeOnboarding,
         isCreateEventOpen,
+        eventToEdit,
         openCreateEvent,
+        openEditEvent,
         closeCreateEvent,
         selectedEventForDetail,
         openEventDetail,

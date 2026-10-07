@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { 
   X, 
@@ -13,7 +13,10 @@ import {
   ExternalLink, 
   ShieldAlert, 
   Users, 
-  Share2 
+  Share2,
+  Edit3,
+  Trash2,
+  AlertTriangle
 } from 'lucide-react';
 
 export const EventDetailModal: React.FC = () => {
@@ -21,6 +24,7 @@ export const EventDetailModal: React.FC = () => {
     selectedEventForDetail: event,
     closeEventDetail,
     isAuthenticated,
+    user,
     savedEventIds,
     goingEventIds,
     favouriteCategories,
@@ -28,8 +32,12 @@ export const EventDetailModal: React.FC = () => {
     toggleGoingEvent,
     toggleFavouriteCategory,
     openAuthModal,
+    openEditEvent,
+    deleteEvent,
     setCurrentTab,
   } = useApp();
+
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   if (!event) return null;
 
@@ -37,6 +45,21 @@ export const EventDetailModal: React.FC = () => {
   const isGoing = goingEventIds.includes(event.id);
   const isFav = favouriteCategories.includes(event.category);
   const isCancelled = event.status === 'Cancelled';
+  const isTentative = Boolean(
+    event.is_tentative || 
+    event.time_start_end?.toLowerCase().includes('tentative') ||
+    event.requirements_eligibility?.includes('[TENTATIVE]')
+  );
+
+  const cleanEligibility = (event.requirements_eligibility || '')
+    .replace('[TENTATIVE]', '')
+    .trim();
+
+  // Allow creator, or any logged-in student organizer to edit/delete
+  const canManage = Boolean(
+    isAuthenticated && 
+    (event.submitted_by === user?.flame_email || !event.submitted_by || event.submitted_by.includes('flame.edu.in'))
+  );
 
   const handleAction = (type: 'going' | 'save' | 'fav') => {
     if (!isAuthenticated) {
@@ -49,7 +72,7 @@ export const EventDetailModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-sm animate-fade-in select-none">
       <div 
         className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-[#fcfbf7] text-neutral-900 rounded-sm shadow-2xl border-4 border-[#e5dec9] p-5 sm:p-7"
         style={{
@@ -75,6 +98,11 @@ export const EventDetailModal: React.FC = () => {
           <span className="px-3 py-1 bg-[#1a1714] text-amber-200 text-xs font-bold uppercase tracking-wider rounded-xs">
             {event.category}
           </span>
+          {isTentative && (
+            <span className="px-2.5 py-0.5 bg-amber-100 border border-amber-400 text-amber-900 text-xs font-bold uppercase rounded-xs flex items-center gap-1">
+              <span>🗓️ Tentative Date</span>
+            </span>
+          )}
           <span className="text-xs text-neutral-500 font-handwritten text-base">
             organized by {event.organizer}
           </span>
@@ -86,13 +114,76 @@ export const EventDetailModal: React.FC = () => {
         </div>
 
         {/* Title */}
-        <h2 className="font-editorial text-2xl sm:text-3xl font-bold text-neutral-900 leading-tight mb-4">
+        <h2 className="font-editorial text-2xl sm:text-3xl font-bold text-neutral-900 leading-tight mb-3">
           {event.event_name}
         </h2>
 
+        {/* Tentative Schedule Banner */}
+        {isTentative && (
+          <div className="p-3 bg-amber-50/90 border-2 border-dashed border-amber-300 rounded-sm text-xs text-amber-950 flex items-start gap-2.5 mb-4">
+            <span className="text-base shrink-0">🗓️</span>
+            <div>
+              <p className="font-bold">Tentative Schedule (Subject to Confirmation)</p>
+              <p className="text-amber-800 mt-0.5">
+                {event.tentative_note || 'The date and time for this event are currently tentative and awaiting final room or time allocation.'}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Organizer Management Bar (Edit & Delete) */}
+        {canManage && (
+          <div className="flex flex-wrap items-center justify-between gap-2 p-2.5 bg-[#f4eee0] border border-[#ded3bb] rounded-sm mb-4 text-xs font-sans-ui">
+            <span className="font-semibold text-neutral-800 flex items-center gap-1">
+              <span>🛠️ Organizer Controls:</span>
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  closeEventDetail();
+                  openEditEvent(event);
+                }}
+                className="px-3 py-1.5 bg-white hover:bg-neutral-50 text-neutral-800 border border-neutral-300 rounded font-bold shadow-2xs flex items-center gap-1.5 transition-colors"
+              >
+                <Edit3 className="w-3.5 h-3.5 text-amber-600" />
+                <span>Edit Event</span>
+              </button>
+
+              {showDeleteConfirm ? (
+                <div className="flex items-center gap-1.5 bg-red-50 p-1 rounded border border-red-200 animate-fade-in">
+                  <span className="text-[11px] text-red-800 font-bold">Delete permanently?</span>
+                  <button
+                    onClick={() => {
+                      deleteEvent(event.id);
+                      closeEventDetail();
+                    }}
+                    className="px-2.5 py-1 bg-red-700 hover:bg-red-800 text-white rounded font-bold text-xs"
+                  >
+                    Yes, Delete
+                  </button>
+                  <button
+                    onClick={() => setShowDeleteConfirm(false)}
+                    className="px-2 py-1 bg-neutral-200 text-neutral-700 rounded text-xs"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 border border-red-300 rounded font-bold shadow-2xs flex items-center gap-1.5 transition-colors"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Delete</span>
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Visual photo if present */}
         {event.event_image && (
-          <div className="relative w-full h-56 sm:h-64 rounded-sm overflow-hidden mb-5 border border-neutral-300 shadow-md">
+          <div className="relative w-full h-56 sm:h-64 rounded-sm overflow-hidden mb-5 border border-neutral-300 shadow-md bg-neutral-100">
             <img
               src={event.event_image}
               alt={event.event_name}
@@ -108,62 +199,61 @@ export const EventDetailModal: React.FC = () => {
           </div>
         )}
 
-        {/* Grid of Key Event Information */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 bg-[#f4eee1] rounded-sm border border-[#e2d6be] mb-5 text-xs sm:text-sm">
-          <div className="flex items-center gap-2.5">
-            <Calendar className="w-4 h-4 text-[#c93b2b]" />
+        {/* Metadata Pill Matrix */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5 p-4 bg-[#f4eee0] border border-[#ded3bb] rounded-sm font-sans-ui text-xs">
+          <div className="flex items-center gap-2 text-neutral-800">
+            <Calendar className="w-4 h-4 text-[#c93b2b] shrink-0" />
             <div>
-              <p className="text-[10px] text-neutral-500 uppercase tracking-wider font-semibold">Date</p>
-              <p className="font-bold text-neutral-900">{event.date}</p>
+              <span className="text-neutral-500 text-[10px] uppercase font-bold block">Date</span>
+              <span className="font-semibold text-sm">
+                {event.date} {isTentative ? '(Tentative)' : ''}
+              </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5">
-            <Clock className="w-4 h-4 text-[#c93b2b]" />
+          <div className="flex items-center gap-2 text-neutral-800">
+            <Clock className="w-4 h-4 text-[#c93b2b] shrink-0" />
             <div>
-              <p className="text-[10px] text-neutral-500 uppercase tracking-wider font-semibold">Time Slot</p>
-              <p className="font-bold text-neutral-900">{event.time_start_end}</p>
+              <span className="text-neutral-500 text-[10px] uppercase font-bold block">Time</span>
+              <span className="font-semibold text-sm">{event.time_start_end}</span>
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5">
-            <MapPin className="w-4 h-4 text-[#c93b2b]" />
+          <div className="flex items-center gap-2 text-neutral-800">
+            <MapPin className="w-4 h-4 text-[#c93b2b] shrink-0" />
             <div>
-              <p className="text-[10px] text-neutral-500 uppercase tracking-wider font-semibold">Venue & Zone</p>
-              <p className="font-bold text-neutral-900">
+              <span className="text-neutral-500 text-[10px] uppercase font-bold block">Venue</span>
+              <span className="font-semibold text-sm">
                 {event.venue_zone} {event.room_specific ? `· ${event.room_specific}` : ''}
-              </p>
+              </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5">
-            <Users className="w-4 h-4 text-[#c93b2b]" />
-            <div>
-              <p className="text-[10px] text-neutral-500 uppercase tracking-wider font-semibold">Target Cohort / Eligibility</p>
-              <p className="font-bold text-neutral-900">
-                {event.requirements_eligibility || 'Open to All FLAME Students'}
-              </p>
+          {cleanEligibility && (
+            <div className="flex items-center gap-2 text-neutral-800">
+              <Users className="w-4 h-4 text-[#c93b2b] shrink-0" />
+              <div>
+                <span className="text-neutral-500 text-[10px] uppercase font-bold block">Eligibility</span>
+                <span className="font-semibold text-sm">{cleanEligibility}</span>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
-        {/* Description paragraph */}
-        <div className="mb-6">
-          <h4 className="font-editorial text-sm font-bold uppercase tracking-wider text-neutral-700 mb-1.5">
-            About this Event
-          </h4>
-          <p className="text-sm sm:text-base text-neutral-700 leading-relaxed font-sans-ui whitespace-pre-line">
-            {event.description}
-          </p>
+        {/* Description Body */}
+        <div className="mb-6 font-sans-ui leading-relaxed text-sm text-neutral-800 whitespace-pre-line">
+          {event.description}
         </div>
 
-        {/* External Registration Link Callout */}
-        {event.registration_link && (
-          <div className="p-4 bg-amber-50 border-2 border-dashed border-amber-300 rounded-sm mb-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+        {/* Registration CTA banner */}
+        {event.registration_link && !isCancelled && (
+          <div className="p-3.5 bg-amber-50 border border-amber-300 rounded-sm flex items-center justify-between gap-3 mb-6 font-sans-ui">
             <div>
-              <p className="text-xs font-bold text-amber-900 uppercase tracking-wider">Official Registration Link</p>
+              <h4 className="text-xs font-bold text-amber-950 uppercase tracking-wider">
+                Registration Required
+              </h4>
               <p className="text-xs text-amber-800">
-                Complete your registration directly on the organizer&apos;s portal or Google Form.
+                Official external registration via Google Form / RSVP link.
               </p>
             </div>
             <a

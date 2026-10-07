@@ -26,7 +26,8 @@ import {
   Calendar, 
   Clock, 
   MapPin,
-  Save
+  Save,
+  Edit3
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -40,6 +41,7 @@ export const ProfileView: React.FC = () => {
     deleteEvent, 
     updateEvent,
     openCreateEvent,
+    openEditEvent,
     setCurrentTab
   } = useApp();
 
@@ -427,6 +429,14 @@ export const ProfileView: React.FC = () => {
                       <option value="Registration Closed">Registration Closed</option>
                       <option value="Cancelled">Cancelled</option>
                     </select>
+
+                    <button
+                      onClick={() => openEditEvent(evt)}
+                      className="p-2 text-amber-400 hover:text-amber-300 hover:bg-amber-950/40 rounded transition-colors"
+                      title="Edit Event"
+                    >
+                      <Edit3 className="w-4 h-4" />
+                    </button>
 
                     <button
                       onClick={() => deleteEvent(evt.id)}

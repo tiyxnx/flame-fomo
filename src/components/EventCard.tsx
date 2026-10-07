@@ -12,7 +12,8 @@ import {
   Check, 
   AlertCircle,
   ExternalLink,
-  Users
+  Users,
+  Edit3
 } from 'lucide-react';
 
 interface EventCardProps {
@@ -32,12 +33,18 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
     toggleFavouriteCategory,
     openAuthModal,
     openEventDetail,
+    openEditEvent,
   } = useApp();
 
   const isSaved = savedEventIds.includes(event.id);
   const isGoing = goingEventIds.includes(event.id);
   const isFavCategory = favouriteCategories.includes(event.category);
   const isCancelled = event.status === 'Cancelled';
+  const isTentative = Boolean(
+    event.is_tentative || 
+    event.time_start_end?.toLowerCase().includes('tentative') ||
+    event.requirements_eligibility?.includes('[TENTATIVE]')
+  );
 
   // Check if past deadline for Closed state
   const [isPastDeadline, setIsPastDeadline] = React.useState(false);
@@ -155,8 +162,17 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
           </span>
         </div>
 
+        {/* Tentative Badge pinned to top-right of photo */}
+        {isTentative && !isCancelled && (
+          <div className="absolute top-2 right-2 z-10">
+            <span className="inline-block px-2 py-0.5 text-[10px] font-bold bg-[#f3da90] text-[#5c3e0a] border border-[#d3ba6e] shadow-xs rounded-xs">
+              🗓️ Tentative
+            </span>
+          </div>
+        )}
+
         {/* Registration Deadline Banner / Stamp */}
-        {event.registration_deadline && !isCancelled && (
+        {event.registration_deadline && !isCancelled && !isTentative && (
           <div className="absolute bottom-2 right-2 z-10">
             <span className="stamp-urgent">
               <span>Deadline:</span>
@@ -205,6 +221,20 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
             <Bookmark className={`w-3.5 h-3.5 ${isSaved ? 'fill-white' : ''}`} />
             <span>{isSaved ? 'Saved' : 'Save'}</span>
           </button>
+
+          {/* Quick Edit */}
+          {isAuthenticated && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                openEditEvent(event);
+              }}
+              title="Edit Event"
+              className="p-2.5 rounded-full bg-white/90 text-neutral-800 hover:bg-white hover:text-amber-600 transition-transform active:scale-90 shadow-md"
+            >
+              <Edit3 className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </div>
 
@@ -221,6 +251,11 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
           <div className="flex items-center gap-1 text-neutral-800 font-medium">
             <Calendar className="w-3.5 h-3.5 text-[#c93b2b]" />
             <span>{event.date}</span>
+            {isTentative && (
+              <span className="text-[10px] bg-amber-100 text-amber-900 border border-amber-300 px-1 rounded-2xs font-bold">
+                TBD
+              </span>
+            )}
           </div>
 
           <div className="flex items-center gap-1 text-neutral-700">

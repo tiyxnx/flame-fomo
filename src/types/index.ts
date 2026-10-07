@@ -19,7 +19,7 @@ export type VenueZone =
   | 'Flora & Fauna'
   | 'Shantiniketan/Recreational';
 
-export type EventStatus = 'Upcoming' | 'Registration Closed' | 'Cancelled';
+export type EventStatus = 'Upcoming' | 'Registration Closed' | 'Cancelled' | 'Tentative';
 
 export interface ClassScheduleItem {
   id: string;
@@ -60,6 +60,8 @@ export interface EventItem {
   requirements_eligibility?: string; // Target Student Year, e.g. "Open to All" or "UG1 & UG2"
   event_image?: string;
   status: EventStatus;
+  is_tentative?: boolean;
+  tentative_note?: string;
   submitted_by?: string; // user email if UGC
   created_at?: string;
 }
