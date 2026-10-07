@@ -65,6 +65,7 @@ export const CreateEventModal: React.FC = () => {
   const [timeEnd, setTimeEnd] = useState('18:30');
   const [venueZone, setVenueZone] = useState<VenueZone>('Academics');
   const [roomSpecific, setRoomSpecific] = useState('');
+  const [isCustomRoom, setIsCustomRoom] = useState(false);
   const [organizer, setOrganizer] = useState('');
   const [description, setDescription] = useState('');
   const [registrationDeadlineDate, setRegistrationDeadlineDate] = useState('');
@@ -140,6 +141,7 @@ export const CreateEventModal: React.FC = () => {
       setEventImage('');
       setStatus('Upcoming');
       setImageTab('ai');
+      setIsCustomRoom(false);
     }
     setErrorMsg('');
   }, [eventToEdit, isCreateEventOpen, user]);
@@ -480,22 +482,48 @@ export const CreateEventModal: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-neutral-700 mb-1">
-                Specific Location / Room
-              </label>
-              <input
-                type="text"
-                list="venue-suggestions"
-                placeholder="e.g. FLAME Kund or Kalidas Centre 102"
-                value={roomSpecific}
-                onChange={(e) => setRoomSpecific(e.target.value)}
-                className="w-full px-3 py-2 bg-white border border-[#d6cbb0] rounded-sm text-xs text-neutral-900"
-              />
-              <datalist id="venue-suggestions">
-                {VENUE_LOCATIONS_MAP[venueZone]?.map((loc) => (
-                  <option key={loc} value={loc} />
-                ))}
-              </datalist>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-700">
+                  Specific Room / Spot
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setIsCustomRoom(!isCustomRoom)}
+                  className="text-[11px] text-[#c93b2b] hover:underline font-semibold"
+                >
+                  {isCustomRoom ? 'Choose from list' : '+ Custom room'}
+                </button>
+              </div>
+
+              {!isCustomRoom ? (
+                <select
+                  value={roomSpecific}
+                  onChange={(e) => {
+                    if (e.target.value === '__custom__') {
+                      setIsCustomRoom(true);
+                      setRoomSpecific('');
+                    } else {
+                      setRoomSpecific(e.target.value);
+                    }
+                  }}
+                  className="w-full px-3 py-2 bg-white border border-[#d6cbb0] rounded-sm text-xs text-neutral-900 focus:outline-none focus:border-[#c93b2b]"
+                >
+                  <option value="">-- Select Specific Room / Area --</option>
+                  {VENUE_LOCATIONS_MAP[venueZone]?.map((loc) => (
+                    <option key={loc} value={loc}>{loc}</option>
+                  ))}
+                  <option value="__custom__">✏️ Type another custom room...</option>
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  placeholder="e.g. Kalidas Centre 304 or Amphitheatre Lawn"
+                  value={roomSpecific}
+                  onChange={(e) => setRoomSpecific(e.target.value)}
+                  className="w-full px-3 py-2 bg-white border border-[#d6cbb0] rounded-sm text-xs text-neutral-900 focus:outline-none focus:border-[#c93b2b]"
+                  autoFocus
+                />
+              )}
             </div>
           </div>
 

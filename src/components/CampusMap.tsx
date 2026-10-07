@@ -31,11 +31,29 @@ export const CampusMap: React.FC = () => {
   // Requirement: ONLY events the user has marked as "I'm Going" render as numbered pins on the map image
   const goingEvents = events.filter((e) => goingEventIds.includes(e.id));
 
-  // Compute map pin coordinate with gentle jitter for multiple events in same zone
+  // Compute map pin coordinate with smart sub-building matching and gentle jitter
   const getCoordinatesForEvent = (event: EventItem, index: number) => {
-    let base = event.room_specific && SPECIFIC_VENUE_COORDINATES[event.room_specific]
-      ? SPECIFIC_VENUE_COORDINATES[event.room_specific]
-      : ZONE_COORDINATES[event.venue_zone] || { x: 50, y: 50 };
+    let base = null;
+    if (event.room_specific) {
+      if (SPECIFIC_VENUE_COORDINATES[event.room_specific]) {
+        base = SPECIFIC_VENUE_COORDINATES[event.room_specific];
+      } else {
+        // Match building name keyword in specific room string
+        for (const [key, coords] of Object.entries(SPECIFIC_VENUE_COORDINATES)) {
+          if (
+            event.room_specific.toLowerCase().includes(key.toLowerCase()) || 
+            key.toLowerCase().includes(event.room_specific.toLowerCase())
+          ) {
+            base = coords;
+            break;
+          }
+        }
+      }
+    }
+
+    if (!base) {
+      base = ZONE_COORDINATES[event.venue_zone] || { x: 50, y: 50 };
+    }
 
     // Small offset for overlapping events
     const jitterX = (index % 3 - 1) * 2.5;
