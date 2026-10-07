@@ -62,6 +62,7 @@ export interface EventItem {
   status: EventStatus;
   is_tentative?: boolean;
   tentative_note?: string;
+  registration_fee?: string; // e.g. "Free" or "₹200" or "₹3,540"
   submitted_by?: string; // user email if UGC
   created_at?: string;
 }

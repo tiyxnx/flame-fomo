@@ -155,11 +155,16 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
           </div>
         )}
 
-        {/* Category Badge pinned to top-left of photo */}
-        <div className="absolute top-2 left-2 z-10">
+        {/* Category Badge & Registration Fee pinned to top-left of photo */}
+        <div className="absolute top-2 left-2 z-10 flex flex-wrap items-center gap-1 max-w-[75%]">
           <span className={`inline-block px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-xs border shadow-sm ${getCategoryBadgeColor(event.category)}`}>
             {event.category}
           </span>
+          {event.registration_fee && (
+            <span className="inline-block px-2 py-0.5 text-[10px] font-bold tracking-tight rounded-xs bg-emerald-900/90 text-emerald-100 border border-emerald-600/60 shadow-sm backdrop-blur-2xs">
+              {event.registration_fee.toLowerCase() === 'free' ? 'FREE' : `🎟️ ${event.registration_fee}`}
+            </span>
+          )}
         </div>
 
         {/* Tentative Badge pinned to top-right of photo */}

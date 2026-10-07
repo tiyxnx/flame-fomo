@@ -71,6 +71,7 @@ export const CreateEventModal: React.FC = () => {
   const [registrationDeadlineDate, setRegistrationDeadlineDate] = useState('');
   const [registrationDeadlineTime, setRegistrationDeadlineTime] = useState('23:59');
   const [registrationLink, setRegistrationLink] = useState('');
+  const [registrationFee, setRegistrationFee] = useState('');
   const [requirementsEligibility, setRequirementsEligibility] = useState('Open to All Students');
   const [eventImage, setEventImage] = useState('');
   const [status, setStatus] = useState<EventStatus>('Upcoming');
@@ -95,9 +96,11 @@ export const CreateEventModal: React.FC = () => {
       setOrganizer(eventToEdit.organizer);
       setDescription(eventToEdit.description);
       setRegistrationLink(eventToEdit.registration_link || '');
+      setRegistrationFee(eventToEdit.registration_fee || '');
       setRequirementsEligibility(
         (eventToEdit.requirements_eligibility || '')
           .replace('[TENTATIVE]', '')
+          .replace(/\[FEE:\s*[^\]]+\]/, '')
           .trim() || 'Open to All Students'
       );
       setEventImage(eventToEdit.event_image || '');
@@ -137,6 +140,7 @@ export const CreateEventModal: React.FC = () => {
       setRegistrationDeadlineDate('');
       setRegistrationDeadlineTime('23:59');
       setRegistrationLink('');
+      setRegistrationFee('');
       setRequirementsEligibility('Open to All Students');
       setEventImage('');
       setStatus('Upcoming');
@@ -264,6 +268,7 @@ export const CreateEventModal: React.FC = () => {
         status: isTentative && status === 'Upcoming' ? 'Upcoming' : status,
         is_tentative: isTentative,
         tentative_note: tentativeNote.trim() || undefined,
+        registration_fee: registrationFee.trim() || undefined,
       });
     } else {
       // CREATE NEW EVENT
@@ -285,6 +290,7 @@ export const CreateEventModal: React.FC = () => {
         status: isTentative && status === 'Upcoming' ? 'Upcoming' : status,
         is_tentative: isTentative,
         tentative_note: tentativeNote.trim() || undefined,
+        registration_fee: registrationFee.trim() || undefined,
       });
     }
 
@@ -610,6 +616,22 @@ export const CreateEventModal: React.FC = () => {
               />
               <p className="text-[10px] text-amber-800 mt-1">
                 Direct link to Google Form / RSVP website
+              </p>
+            </div>
+
+            <div className="sm:col-span-2 pt-2 border-t border-amber-200/60">
+              <label className="block text-xs font-bold uppercase tracking-wider text-amber-900 mb-1">
+                Registration Fee / Stall Price (Optional)
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. Free, or ₹200 (₹300 on-spot), or ₹3,540 (Business Stall)"
+                value={registrationFee}
+                onChange={(e) => setRegistrationFee(e.target.value)}
+                className="w-full px-3 py-1.5 bg-white border border-[#d6cbb0] rounded-sm text-xs text-neutral-900 placeholder:text-neutral-400"
+              />
+              <p className="text-[10px] text-amber-800 mt-1">
+                Displays a prominent ticket/price badge on the event card (e.g. &ldquo;₹200&rdquo; or &ldquo;Free&rdquo;).
               </p>
             </div>
           </div>

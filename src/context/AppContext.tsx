@@ -144,13 +144,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           .order('date', { ascending: true })
           .then(({ data, error }) => {
             if (data) {
-              const mappedEvents: EventItem[] = (data as any[]).map((ev) => ({
-                ...ev,
-                is_tentative:
-                  ev.status === 'Tentative' ||
-                  ev.time_start_end?.includes('Tentative') ||
-                  ev.requirements_eligibility?.includes('[TENTATIVE]'),
-              }));
+              const mappedEvents: EventItem[] = (data as any[]).map((ev) => {
+                const feeMatch = ev.requirements_eligibility?.match(/\[FEE:\s*([^\]]+)\]/);
+                return {
+                  ...ev,
+                  registration_fee: feeMatch ? feeMatch[1].trim() : undefined,
+                  is_tentative:
+                    ev.status === 'Tentative' ||
+                    ev.time_start_end?.includes('Tentative') ||
+                    ev.requirements_eligibility?.includes('[TENTATIVE]'),
+                };
+              });
               setEvents(mappedEvents);
               localStorage.setItem(LOCAL_STORAGE_EVENTS_KEY, JSON.stringify(mappedEvents));
               // Dynamic notifications based on actual campus events
@@ -614,7 +618,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     saveEventsToStorage(updated);
 
     if (isSupabaseConfigured()) {
-      const { is_tentative, tentative_note, ...cleanPayload } = newEvent;
+      let finalEligibility = newEvent.requirements_eligibility || '';
+      if (newEvent.registration_fee && !finalEligibility.includes('[FEE:')) {
+        finalEligibility = `${finalEligibility} [FEE: ${newEvent.registration_fee}]`.trim();
+      }
+      const { is_tentative, tentative_note, registration_fee, ...cleanPayload } = newEvent;
+      cleanPayload.requirements_eligibility = finalEligibility || undefined;
+
       supabase.from('events').insert([cleanPayload]).then(({ error }) => {
         if (error) console.error('Supabase createEvent error:', error);
       });
@@ -630,7 +640,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
 
     if (isSupabaseConfigured()) {
-      const { is_tentative, tentative_note, ...cleanPayload } = eventData;
+      let finalEligibility = eventData.requirements_eligibility;
+      if (eventData.registration_fee) {
+        finalEligibility = `${(finalEligibility || '').replace(/\[FEE:\s*[^\]]+\]/, '').trim()} [FEE: ${eventData.registration_fee}]`.trim();
+      }
+      const { is_tentative, tentative_note, registration_fee, ...cleanPayload } = eventData;
+      if (finalEligibility !== undefined) {
+        cleanPayload.requirements_eligibility = finalEligibility || undefined;
+      }
+
       supabase.from('events').update(cleanPayload).eq('id', eventId).then(({ error }) => {
         if (error) console.error('Supabase updateEvent error:', error);
       });

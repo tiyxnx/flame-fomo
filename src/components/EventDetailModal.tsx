@@ -16,7 +16,8 @@ import {
   Share2,
   Edit3,
   Trash2,
-  AlertTriangle
+  AlertTriangle,
+  Ticket
 } from 'lucide-react';
 
 export const EventDetailModal: React.FC = () => {
@@ -51,8 +52,12 @@ export const EventDetailModal: React.FC = () => {
     event.requirements_eligibility?.includes('[TENTATIVE]')
   );
 
+  const feeFromTag = event.requirements_eligibility?.match(/\[FEE:\s*([^\]]+)\]/)?.[1];
+  const displayFee = event.registration_fee || feeFromTag;
+
   const cleanEligibility = (event.requirements_eligibility || '')
     .replace('[TENTATIVE]', '')
+    .replace(/\[FEE:\s*[^\]]+\]/g, '')
     .trim();
 
   // Allow creator, or any logged-in student organizer to edit/delete
@@ -98,6 +103,11 @@ export const EventDetailModal: React.FC = () => {
           <span className="px-3 py-1 bg-[#1a1714] text-amber-200 text-xs font-bold uppercase tracking-wider rounded-xs">
             {event.category}
           </span>
+          {displayFee && (
+            <span className="px-2.5 py-0.5 bg-emerald-100 border border-emerald-400 text-emerald-900 text-xs font-bold rounded-xs flex items-center gap-1">
+              <span>🎟️ {displayFee.toLowerCase() === 'free' ? 'Free Entry' : `Fee: ${displayFee}`}</span>
+            </span>
+          )}
           {isTentative && (
             <span className="px-2.5 py-0.5 bg-amber-100 border border-amber-400 text-amber-900 text-xs font-bold uppercase rounded-xs flex items-center gap-1">
               <span>🗓️ Tentative Date</span>
@@ -228,6 +238,16 @@ export const EventDetailModal: React.FC = () => {
               </span>
             </div>
           </div>
+
+          {displayFee && (
+            <div className="flex items-center gap-2 text-neutral-800">
+              <Ticket className="w-4 h-4 text-emerald-700 shrink-0" />
+              <div>
+                <span className="text-neutral-500 text-[10px] uppercase font-bold block">Registration Fee</span>
+                <span className="font-semibold text-sm text-emerald-900">{displayFee}</span>
+              </div>
+            </div>
+          )}
 
           {cleanEligibility && (
             <div className="flex items-center gap-2 text-neutral-800">
