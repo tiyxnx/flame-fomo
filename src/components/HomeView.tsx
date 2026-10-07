@@ -7,7 +7,7 @@ import { MyPlanToday } from './home/MyPlanToday';
 import { HappeningSoon } from './home/HappeningSoon';
 import { YourWeek } from './home/YourWeek';
 import { EventCard } from './EventCard';
-import { EVENT_CATEGORIES } from '@/lib/constants';
+import { EVENT_CATEGORIES, isEventActive } from '@/lib/constants';
 import { EventCategory } from '@/types';
 import { 
   Search, 
@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 
 export const HomeView: React.FC = () => {
-  const { events, setCurrentTab } = useApp();
+  const { events, savedEventIds, goingEventIds, setCurrentTab } = useApp();
 
   const [selectedQuickCategory, setSelectedQuickCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -38,8 +38,13 @@ export const HomeView: React.FC = () => {
     );
   }, []);
 
-  // Filter featured cards
+  // Filter featured cards with 2-day auto-expiry rule
   const displayedEvents = events.filter((evt) => {
+    // 2-day auto-expiry rule: remove from all events after 2 days unless favourited
+    if (!isEventActive(evt, savedEventIds, goingEventIds)) {
+      return false;
+    }
+
     if (selectedQuickCategory !== 'All' && evt.category !== selectedQuickCategory) {
       return false;
     }

@@ -9,8 +9,16 @@ export const HappeningSoon: React.FC = () => {
   const { events } = useApp();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // Filter events happening soon (upcoming or within next 3 days)
-  const upcomingEvents = events.filter((e) => e.status !== 'Cancelled').slice(0, 7);
+  const [todayStr, setTodayStr] = React.useState('2026-10-07');
+  React.useEffect(() => {
+    setTodayStr(new Date().toISOString().split('T')[0]);
+  }, []);
+
+  // Filter events happening soon (upcoming or today onwards)
+  const upcomingEvents = events
+    .filter((e) => e.status !== 'Cancelled' && e.date >= todayStr)
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .slice(0, 7);
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollContainerRef.current) {

@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useApp } from '@/context/AppContext';
 import { EventCard } from './EventCard';
 import { EmptyStateScrapbook } from './EmptyStateScrapbook';
-import { EVENT_CATEGORIES } from '@/lib/constants';
+import { EVENT_CATEGORIES, isEventActive } from '@/lib/constants';
 import { EventCategory, EventItem } from '@/types';
 import { 
   Search, 
@@ -18,7 +18,14 @@ import {
 } from 'lucide-react';
 
 export const ExploreView: React.FC = () => {
-  const { events, user, isAuthenticated, openAuthModal } = useApp();
+  const { 
+    events, 
+    user, 
+    isAuthenticated, 
+    savedEventIds, 
+    goingEventIds, 
+    openAuthModal 
+  } = useApp();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
@@ -41,6 +48,13 @@ export const ExploreView: React.FC = () => {
   // Filter events
   const filteredEvents = useMemo(() => {
     return events.filter((evt) => {
+      // 0. 2-Day Auto-Expiry Rule: Remove from all events after 2 days of happening unless favourited
+      if (timeFilter !== 'Past') {
+        if (!isEventActive(evt, savedEventIds, goingEventIds)) {
+          return false;
+        }
+      }
+
       // 1. Search Query
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
@@ -62,7 +76,7 @@ export const ExploreView: React.FC = () => {
       // 3. Time Filter
       if (timeFilter === 'Today' && evt.date !== todayStr) return false;
       if (timeFilter === 'Tomorrow' && evt.date !== tomorrowStr) return false;
-      if (timeFilter === 'Past' && evt.status !== 'Registration Closed' && evt.date >= todayStr) return false;
+      if (timeFilter === 'Past' && evt.date >= todayStr) return false;
 
       // 4. "Fits My Schedule" toggle
       if (fitsMyScheduleOnly && isAuthenticated && user) {
