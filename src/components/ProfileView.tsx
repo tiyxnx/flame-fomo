@@ -1,0 +1,448 @@
+'use client';
+
+import React, { useState } from 'react';
+import { useApp } from '@/context/AppContext';
+import { 
+  AcademicYear, 
+  EventCategory, 
+  ClassScheduleItem, 
+  EventItem 
+} from '@/types';
+import { 
+  ACADEMIC_YEARS, 
+  EVENT_CATEGORIES 
+} from '@/lib/constants';
+import { EventCard } from './EventCard';
+import { EmptyStateScrapbook } from './EmptyStateScrapbook';
+import { 
+  User, 
+  BookOpen, 
+  Bookmark, 
+  FileEdit, 
+  Trash2, 
+  Plus, 
+  Check, 
+  Sparkles, 
+  Calendar, 
+  Clock, 
+  MapPin,
+  Save
+} from 'lucide-react';
+import confetti from 'canvas-confetti';
+
+export const ProfileView: React.FC = () => {
+  const { 
+    user, 
+    events, 
+    savedEventIds, 
+    goingEventIds, 
+    updateProfile, 
+    deleteEvent, 
+    updateEvent,
+    openCreateEvent,
+    setCurrentTab
+  } = useApp();
+
+  const [activeTab, setActiveTab] = useState<'preferences' | 'saved' | 'submitted'>('preferences');
+
+  // Tab 1 state
+  const [academicYear, setAcademicYear] = useState<AcademicYear>(user?.academic_year || 'UG2');
+  const [preferences, setPreferences] = useState<EventCategory[]>(user?.category_preferences || []);
+  const [timetable, setTimetable] = useState<ClassScheduleItem[]>(user?.academic_timetable || []);
+
+  // New course input
+  const [newCourseName, setNewCourseName] = useState('');
+  const [newDay, setNewDay] = useState<'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday'>('Monday');
+  const [newTimeStart, setNewTimeStart] = useState('14:15');
+  const [newTimeEnd, setNewTimeEnd] = useState('15:30');
+  const [newRoom, setNewRoom] = useState('Chanakya Hall 2');
+
+  const [savedSuccessMsg, setSavedSuccessMsg] = useState('');
+
+  if (!user) return null;
+
+  // Tab 2: Bookmarked & Going Events
+  const bookmarkedEvents = events.filter((e) => savedEventIds.includes(e.id) || goingEventIds.includes(e.id));
+
+  // Tab 3: Events user published
+  const submittedEvents = events.filter((e) => e.submitted_by === user.flame_email);
+
+  const toggleCategory = (cat: EventCategory) => {
+    if (preferences.includes(cat)) {
+      setPreferences(preferences.filter((c) => c !== cat));
+    } else {
+      setPreferences([...preferences, cat]);
+    }
+  };
+
+  const addClass = () => {
+    if (!newCourseName.trim()) return;
+    const item: ClassScheduleItem = {
+      id: `class-${Date.now()}`,
+      courseName: newCourseName.trim(),
+      day: newDay,
+      timeStart: newTimeStart,
+      timeEnd: newTimeEnd,
+      room: newRoom.trim(),
+      venueZone: 'Academics',
+    };
+    setTimetable([...timetable, item]);
+    setNewCourseName('');
+  };
+
+  const removeClass = (id: string) => {
+    setTimetable(timetable.filter((c) => c.id !== id));
+  };
+
+  const savePreferences = () => {
+    updateProfile({
+      academic_year: academicYear,
+      category_preferences: preferences,
+      academic_timetable: timetable,
+    });
+    setSavedSuccessMsg('Preferences & timetable saved successfully!');
+    try {
+      confetti({ particleCount: 50, spread: 50, origin: { y: 0.7 } });
+    } catch {}
+    setTimeout(() => setSavedSuccessMsg(''), 3000);
+  };
+
+  return (
+    <div className="max-w-6xl mx-auto py-6 px-4 sm:px-6 lg:px-8 select-none">
+      
+      {/* Profile Header Banner */}
+      <div className="relative bg-[#201c18] border border-[#3d3429] rounded-sm p-6 shadow-xl mb-6">
+        <div 
+          className="absolute -top-3 left-6 w-24 h-5 bg-[#f3da90]/80 shadow-xs rotate-[-2deg] pointer-events-none"
+          style={{ clipPath: 'polygon(3% 0%, 97% 2%, 100% 98%, 0% 96%)' }}
+        />
+
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 rounded-full bg-[#c93b2b] text-amber-100 font-bold font-editorial text-2xl flex items-center justify-center border-2 border-amber-300/40 shadow-lg">
+              {user.name.charAt(0)}
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="font-editorial text-2xl sm:text-3xl font-bold text-neutral-100">
+                  {user.name}
+                </h2>
+                <span className="px-2 py-0.5 bg-amber-400/20 text-amber-300 font-mono text-xs rounded border border-amber-400/30">
+                  {user.academic_year}
+                </span>
+              </div>
+              <p className="text-xs text-[#a89b87] font-mono mt-0.5">{user.flame_email}</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button
+              onClick={openCreateEvent}
+              className="px-4 py-2 bg-[#c93b2b] hover:bg-[#b02e20] text-amber-100 text-xs font-bold rounded-xs shadow flex items-center gap-1.5"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Post New Event</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* The Three Distinct Tabs as required by read.md Section 6.3 */}
+      <div className="flex border-b border-[#3d3429] mb-6">
+        <button
+          onClick={() => setActiveTab('preferences')}
+          className={`px-4 sm:px-6 py-3 text-xs sm:text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${
+            activeTab === 'preferences'
+              ? 'border-[#c93b2b] text-amber-300 bg-[#26201a]'
+              : 'border-transparent text-neutral-400 hover:text-neutral-200'
+          }`}
+        >
+          <BookOpen className="w-4 h-4" />
+          <span>1. Edit Preferences / Timetable</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('saved')}
+          className={`px-4 sm:px-6 py-3 text-xs sm:text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${
+            activeTab === 'saved'
+              ? 'border-[#c93b2b] text-amber-300 bg-[#26201a]'
+              : 'border-transparent text-neutral-400 hover:text-neutral-200'
+          }`}
+        >
+          <Bookmark className="w-4 h-4" />
+          <span>2. My Saved Events ({bookmarkedEvents.length})</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('submitted')}
+          className={`px-4 sm:px-6 py-3 text-xs sm:text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${
+            activeTab === 'submitted'
+              ? 'border-[#c93b2b] text-amber-300 bg-[#26201a]'
+              : 'border-transparent text-neutral-400 hover:text-neutral-200'
+          }`}
+        >
+          <FileEdit className="w-4 h-4" />
+          <span>3. Events I&apos;ve Submitted ({submittedEvents.length})</span>
+        </button>
+      </div>
+
+      {/* TAB 1: Edit Preferences & Timetable */}
+      {activeTab === 'preferences' && (
+        <div className="space-y-6">
+          {savedSuccessMsg && (
+            <div className="p-3 bg-emerald-950/80 border border-emerald-500 text-emerald-200 rounded-sm text-xs flex items-center gap-2">
+              <Check className="w-4 h-4 text-emerald-400" />
+              <span>{savedSuccessMsg}</span>
+            </div>
+          )}
+
+          {/* Cohort Selector */}
+          <div className="bg-[#201c18] border border-[#3b3327] rounded-sm p-5 shadow-lg">
+            <h3 className="font-editorial text-lg font-bold text-amber-100 mb-3">
+              Academic Cohort
+            </h3>
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+              {ACADEMIC_YEARS.map((yr) => (
+                <button
+                  key={yr}
+                  type="button"
+                  onClick={() => setAcademicYear(yr)}
+                  className={`p-3 rounded-sm border text-center transition-all ${
+                    academicYear === yr
+                      ? 'bg-[#c93b2b] text-white border-red-700 shadow-md font-bold'
+                      : 'bg-[#181613] text-neutral-300 border-[#3d352b] hover:border-neutral-500'
+                  }`}
+                >
+                  <div className="font-editorial text-lg">{yr}</div>
+                  <div className="text-[10px] uppercase opacity-70">
+                    {yr === 'All' ? 'Community' : `Year ${yr.replace('UG', '')}`}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Category Preferences */}
+          <div className="bg-[#201c18] border border-[#3b3327] rounded-sm p-5 shadow-lg">
+            <h3 className="font-editorial text-lg font-bold text-amber-100 mb-3">
+              Interest Preferences
+            </h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+              {EVENT_CATEGORIES.map((cat) => {
+                const isSelected = preferences.includes(cat);
+                return (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => toggleCategory(cat)}
+                    className={`p-2.5 rounded-sm border text-left flex items-center justify-between text-xs font-semibold transition-all ${
+                      isSelected
+                        ? 'bg-amber-300 text-neutral-950 border-amber-400 font-bold'
+                        : 'bg-[#181613] text-neutral-300 border-[#3d352b] hover:bg-[#25201a]'
+                    }`}
+                  >
+                    <span>{cat}</span>
+                    {isSelected && <Check className="w-3.5 h-3.5 text-neutral-950" />}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Academic Timetable for Clash Detection */}
+          <div className="bg-[#201c18] border border-[#3b3327] rounded-sm p-5 shadow-lg">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-editorial text-lg font-bold text-amber-100">
+                Academic Class Timetable (Clash Detection Engine)
+              </h3>
+              <span className="text-xs text-[#a89b87] font-mono">{timetable.length} active slots</span>
+            </div>
+
+            {/* List */}
+            <div className="space-y-2 mb-4">
+              {timetable.map((cls) => (
+                <div
+                  key={cls.id}
+                  className="flex items-center justify-between p-2.5 bg-[#181613] border border-[#383025] rounded text-xs"
+                >
+                  <div className="flex items-center gap-2">
+                    <BookOpen className="w-3.5 h-3.5 text-[#e25845]" />
+                    <span className="font-bold text-neutral-100">{cls.courseName}</span>
+                    <span className="text-neutral-400">({cls.room})</span>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <span className="font-mono text-amber-300/90">
+                      {cls.day} {cls.timeStart}-{cls.timeEnd}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => removeClass(cls.id)}
+                      className="text-red-400 hover:text-red-300 p-1"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Add class line */}
+            <div className="p-3 bg-[#181613] border border-[#383025] rounded space-y-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-neutral-400">
+                Add Enrolled Course Slot
+              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                <input
+                  type="text"
+                  placeholder="Course Name"
+                  value={newCourseName}
+                  onChange={(e) => setNewCourseName(e.target.value)}
+                  className="p-2 bg-[#201c18] border border-[#42392d] rounded text-neutral-100"
+                />
+                <select
+                  value={newDay}
+                  onChange={(e) => setNewDay(e.target.value as any)}
+                  className="p-2 bg-[#201c18] border border-[#42392d] rounded text-neutral-100"
+                >
+                  {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].map((d) => (
+                    <option key={d} value={d}>{d}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+                <input
+                  type="time"
+                  value={newTimeStart}
+                  onChange={(e) => setNewTimeStart(e.target.value)}
+                  className="p-2 bg-[#201c18] border border-[#42392d] rounded text-neutral-100"
+                />
+                <input
+                  type="time"
+                  value={newTimeEnd}
+                  onChange={(e) => setNewTimeEnd(e.target.value)}
+                  className="p-2 bg-[#201c18] border border-[#42392d] rounded text-neutral-100"
+                />
+                <button
+                  type="button"
+                  onClick={addClass}
+                  className="p-2 bg-neutral-800 hover:bg-neutral-700 text-amber-200 font-bold rounded flex items-center justify-center gap-1 col-span-2 sm:col-span-1"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Add Class</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-5 text-right">
+              <button
+                type="button"
+                onClick={savePreferences}
+                className="px-6 py-2.5 bg-[#c93b2b] hover:bg-[#b02e20] text-amber-100 text-xs sm:text-sm font-bold rounded shadow flex items-center gap-2 ml-auto"
+              >
+                <Save className="w-4 h-4" />
+                <span>Save Changes</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 2: My Saved Events */}
+      {activeTab === 'saved' && (
+        <div>
+          {bookmarkedEvents.length === 0 ? (
+            <EmptyStateScrapbook
+              title="No Saved Events Yet"
+              subtitle="You haven't bookmarked any events. Explore the bulletin board to star, bookmark, or join events."
+              actionButton={{
+                label: "Explore All Events",
+                onClick: () => setCurrentTab('explore'),
+              }}
+            />
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {bookmarkedEvents.map((evt, idx) => (
+                <EventCard key={evt.id} event={evt} rotationIndex={idx} />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* TAB 3: Events I've Submitted (UGC Dashboard) */}
+      {activeTab === 'submitted' && (
+        <div>
+          {submittedEvents.length === 0 ? (
+            <EmptyStateScrapbook
+              title="No Published Events"
+              subtitle="You haven't submitted any events to the campus bulletin board yet. Organized a study group, workshop, or open mic?"
+              actionButton={{
+                label: "Publish an Event",
+                onClick: openCreateEvent,
+              }}
+            />
+          ) : (
+            <div className="space-y-4">
+              {submittedEvents.map((evt) => (
+                <div
+                  key={evt.id}
+                  className="p-4 bg-[#201c18] border border-[#3d3429] rounded-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                >
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="px-2 py-0.5 bg-neutral-800 text-amber-200 text-[10px] font-bold rounded uppercase">
+                        {evt.category}
+                      </span>
+                      <span className={`px-2 py-0.5 text-[10px] font-bold rounded uppercase ${
+                        evt.status === 'Cancelled'
+                          ? 'bg-red-900/60 text-red-300'
+                          : evt.status === 'Registration Closed'
+                          ? 'bg-neutral-800 text-neutral-400'
+                          : 'bg-emerald-900/60 text-emerald-300'
+                      }`}>
+                        {evt.status}
+                      </span>
+                    </div>
+
+                    <h4 className="font-editorial text-lg font-bold text-neutral-100">
+                      {evt.event_name}
+                    </h4>
+
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-[#a89b87] mt-1 font-sans-ui">
+                      <span>{evt.date} · {evt.time_start_end}</span>
+                      <span>·</span>
+                      <span>{evt.venue_zone} ({evt.room_specific})</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={evt.status}
+                      onChange={(e) => updateEvent(evt.id, { status: e.target.value as any })}
+                      className="px-2.5 py-1.5 bg-[#181613] border border-[#42392d] text-xs text-neutral-200 rounded"
+                    >
+                      <option value="Upcoming">Upcoming</option>
+                      <option value="Registration Closed">Registration Closed</option>
+                      <option value="Cancelled">Cancelled</option>
+                    </select>
+
+                    <button
+                      onClick={() => deleteEvent(evt.id)}
+                      className="p-2 text-red-400 hover:text-red-300 hover:bg-red-950/40 rounded transition-colors"
+                      title="Delete Event"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+    </div>
+  );
+};
