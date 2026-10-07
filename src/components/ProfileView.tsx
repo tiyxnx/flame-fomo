@@ -42,10 +42,12 @@ export const ProfileView: React.FC = () => {
     updateEvent,
     openCreateEvent,
     openEditEvent,
+    openEventDetail,
     setCurrentTab
   } = useApp();
 
   const [activeTab, setActiveTab] = useState<'preferences' | 'saved' | 'submitted'>('preferences');
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   // Tab 1 state
   const [academicYear, setAcademicYear] = useState<AcademicYear>(user?.academic_year || 'UG2');
@@ -67,7 +69,11 @@ export const ProfileView: React.FC = () => {
   const bookmarkedEvents = events.filter((e) => savedEventIds.includes(e.id) || goingEventIds.includes(e.id));
 
   // Tab 3: Events user published
-  const submittedEvents = events.filter((e) => e.submitted_by === user.flame_email);
+  const userEmail = (user.flame_email || '').toLowerCase().trim();
+  const submittedEvents = events.filter((e) => {
+    const author = (e.submitted_by || '').toLowerCase().trim();
+    return author === userEmail || (author.length > 0 && author === userEmail.split('@')[0]);
+  });
 
   const toggleCategory = (cat: EventCategory) => {
     if (preferences.includes(cat)) {
@@ -134,6 +140,22 @@ export const ProfileView: React.FC = () => {
                 </span>
               </div>
               <p className="text-xs text-[#a89b87] font-mono mt-0.5">{user.flame_email}</p>
+              
+              {/* Quick stats chips */}
+              <div className="flex items-center gap-3 mt-2 text-xs text-neutral-300 font-sans-ui">
+                <span className="flex items-center gap-1">
+                  <Bookmark className="w-3.5 h-3.5 text-amber-400" />
+                  <strong>{bookmarkedEvents.length}</strong> Saved
+                </span>
+                <span>·</span>
+                <button
+                  onClick={() => setActiveTab('submitted')}
+                  className="flex items-center gap-1 text-amber-200 hover:text-amber-100 hover:underline transition-colors"
+                >
+                  <FileEdit className="w-3.5 h-3.5 text-amber-400" />
+                  <strong>{submittedEvents.length}</strong> Posted Events
+                </button>
+              </div>
             </div>
           </div>
 
@@ -184,7 +206,7 @@ export const ProfileView: React.FC = () => {
           }`}
         >
           <FileEdit className="w-4 h-4" />
-          <span>3. Events I&apos;ve Submitted ({submittedEvents.length})</span>
+          <span>3. Events You&apos;ve Posted ({submittedEvents.length})</span>
         </button>
       </div>
 
@@ -373,57 +395,94 @@ export const ProfileView: React.FC = () => {
         </div>
       )}
 
-      {/* TAB 3: Events I've Submitted (UGC Dashboard) */}
+      {/* TAB 3: Events You've Posted (Creator Dashboard) */}
       {activeTab === 'submitted' && (
         <div>
           {submittedEvents.length === 0 ? (
             <EmptyStateScrapbook
-              title="No Published Events"
-              subtitle="You haven't submitted any events to the campus bulletin board yet. Organized a study group, workshop, or open mic?"
+              title="You Haven't Posted Any Events Yet"
+              subtitle="When you submit club workshops, sports fixtures, performances, or notices, they will all appear here so you can edit the details anytime!"
               actionButton={{
-                label: "Publish an Event",
+                label: "+ Post an Event",
                 onClick: openCreateEvent,
               }}
             />
           ) : (
             <div className="space-y-4">
+              <div className="flex items-center justify-between text-xs text-neutral-400 px-1">
+                <span>Manage and edit the events you have published to the campus bulletin</span>
+                <span className="text-amber-300 font-bold">{submittedEvents.length} Published</span>
+              </div>
+
               {submittedEvents.map((evt) => (
                 <div
                   key={evt.id}
-                  className="p-4 bg-[#201c18] border border-[#3d3429] rounded-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                  className="p-4 bg-[#201c18] border border-[#3d3429] rounded-sm flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-amber-400/40 transition-colors shadow-sm"
                 >
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="px-2 py-0.5 bg-neutral-800 text-amber-200 text-[10px] font-bold rounded uppercase">
-                        {evt.category}
-                      </span>
-                      <span className={`px-2 py-0.5 text-[10px] font-bold rounded uppercase ${
-                        evt.status === 'Cancelled'
-                          ? 'bg-red-900/60 text-red-300'
-                          : evt.status === 'Registration Closed'
-                          ? 'bg-neutral-800 text-neutral-400'
-                          : 'bg-emerald-900/60 text-emerald-300'
-                      }`}>
-                        {evt.status}
-                      </span>
-                    </div>
+                  <div className="flex items-start gap-3.5">
+                    {/* Thumbnail */}
+                    {evt.event_image ? (
+                      <div className="w-16 h-16 rounded-xs overflow-hidden shrink-0 border border-neutral-700 bg-neutral-900">
+                        <img
+                          src={evt.event_image}
+                          alt={evt.event_name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-16 h-16 rounded-xs bg-[#2e261f] border border-neutral-700 flex items-center justify-center shrink-0 text-neutral-500">
+                        <Calendar className="w-6 h-6" />
+                      </div>
+                    )}
 
-                    <h4 className="font-editorial text-lg font-bold text-neutral-100">
-                      {evt.event_name}
-                    </h4>
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
+                        <span className="px-2 py-0.5 bg-neutral-800 text-amber-200 text-[10px] font-bold rounded uppercase">
+                          {evt.category}
+                        </span>
+                        <span className={`px-2 py-0.5 text-[10px] font-bold rounded uppercase ${
+                          evt.status === 'Cancelled'
+                            ? 'bg-red-900/60 text-red-300 border border-red-700/50'
+                            : evt.status === 'Registration Closed'
+                            ? 'bg-neutral-800 text-neutral-400'
+                            : 'bg-emerald-900/60 text-emerald-300 border border-emerald-700/50'
+                        }`}>
+                          {evt.status}
+                        </span>
+                        {evt.registration_fee && (
+                          <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-950/90 text-emerald-300 border border-emerald-800">
+                            🎟️ {evt.registration_fee}
+                          </span>
+                        )}
+                      </div>
 
-                    <div className="flex flex-wrap items-center gap-3 text-xs text-[#a89b87] mt-1 font-sans-ui">
-                      <span>{evt.date} · {evt.time_start_end}</span>
-                      <span>·</span>
-                      <span>{evt.venue_zone} ({evt.room_specific})</span>
+                      <h4 
+                        onClick={() => openEventDetail(evt)}
+                        className="font-editorial text-lg font-bold text-neutral-100 hover:text-amber-300 cursor-pointer transition-colors"
+                      >
+                        {evt.event_name}
+                      </h4>
+
+                      <div className="flex flex-wrap items-center gap-3 text-xs text-[#a89b87] mt-1 font-sans-ui">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3 text-[#c93b2b]" />
+                          {evt.date} · {evt.time_start_end}
+                        </span>
+                        <span>·</span>
+                        <span className="flex items-center gap-1">
+                          <MapPin className="w-3 h-3 text-[#c93b2b]" />
+                          {evt.venue_zone} {evt.room_specific ? `(${evt.room_specific})` : ''}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  {/* Actions Bar */}
+                  <div className="flex flex-wrap items-center gap-2 pt-2 md:pt-0 border-t md:border-t-0 border-[#3d3429]">
                     <select
                       value={evt.status}
                       onChange={(e) => updateEvent(evt.id, { status: e.target.value as any })}
-                      className="px-2.5 py-1.5 bg-[#181613] border border-[#42392d] text-xs text-neutral-200 rounded"
+                      className="px-2.5 py-1.5 bg-[#181613] border border-[#42392d] text-xs text-neutral-200 rounded focus:outline-none"
                     >
                       <option value="Upcoming">Upcoming</option>
                       <option value="Registration Closed">Registration Closed</option>
@@ -431,20 +490,48 @@ export const ProfileView: React.FC = () => {
                     </select>
 
                     <button
-                      onClick={() => openEditEvent(evt)}
-                      className="p-2 text-amber-400 hover:text-amber-300 hover:bg-amber-950/40 rounded transition-colors"
-                      title="Edit Event"
+                      onClick={() => openEventDetail(evt)}
+                      className="px-3 py-1.5 bg-[#2c2620] hover:bg-[#383028] text-amber-200 border border-[#4a3e30] rounded text-xs font-bold transition-colors"
                     >
-                      <Edit3 className="w-4 h-4" />
+                      Preview
                     </button>
 
                     <button
-                      onClick={() => deleteEvent(evt.id)}
-                      className="p-2 text-red-400 hover:text-red-300 hover:bg-red-950/40 rounded transition-colors"
-                      title="Delete Event"
+                      onClick={() => openEditEvent(evt)}
+                      className="px-3 py-1.5 bg-[#f3da90] hover:bg-[#e4cb80] text-neutral-900 rounded text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-colors"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Edit3 className="w-3.5 h-3.5 text-neutral-900" />
+                      <span>Edit Details</span>
                     </button>
+
+                    {deletingId === evt.id ? (
+                      <div className="flex items-center gap-1.5 bg-red-950/80 p-1 rounded border border-red-800">
+                        <span className="text-[11px] text-red-200 font-bold px-1">Delete?</span>
+                        <button
+                          onClick={() => {
+                            deleteEvent(evt.id);
+                            setDeletingId(null);
+                          }}
+                          className="px-2 py-0.5 bg-red-700 hover:bg-red-800 text-white rounded text-xs font-bold"
+                        >
+                          Yes
+                        </button>
+                        <button
+                          onClick={() => setDeletingId(null)}
+                          className="px-2 py-0.5 text-xs text-neutral-300 hover:text-white"
+                        >
+                          No
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setDeletingId(evt.id)}
+                        className="p-2 text-red-400 hover:text-red-300 hover:bg-red-950/40 rounded transition-colors"
+                        title="Delete Event"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}

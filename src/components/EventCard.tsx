@@ -40,6 +40,12 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
   const isGoing = goingEventIds.includes(event.id);
   const isFavCategory = favouriteCategories.includes(event.category);
   const isCancelled = event.status === 'Cancelled';
+  const isAuthor = Boolean(
+    isAuthenticated &&
+    user?.flame_email &&
+    event.submitted_by &&
+    event.submitted_by.toLowerCase().trim() === user.flame_email.toLowerCase().trim()
+  );
   const isTentative = Boolean(
     event.is_tentative || 
     event.time_start_end?.toLowerCase().includes('tentative') ||
@@ -227,15 +233,15 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
             <span>{isSaved ? 'Saved' : 'Save'}</span>
           </button>
 
-          {/* Quick Edit */}
-          {isAuthenticated && (
+          {/* Quick Edit (Only shown to event author) */}
+          {isAuthor && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 openEditEvent(event);
               }}
-              title="Edit Event"
-              className="p-2.5 rounded-full bg-white/90 text-neutral-800 hover:bg-white hover:text-amber-600 transition-transform active:scale-90 shadow-md"
+              title="Edit Your Event"
+              className="p-2.5 rounded-full bg-amber-400 text-amber-950 hover:bg-amber-300 transition-transform active:scale-90 shadow-md"
             >
               <Edit3 className="w-4 h-4" />
             </button>
@@ -283,9 +289,16 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
 
         {/* Organizer annotation in handwritten font */}
         <div className="flex items-center justify-between pt-1 border-t border-neutral-200/80">
-          <span className="font-handwritten text-xs text-neutral-500 truncate">
-            by {event.organizer}
-          </span>
+          <div className="flex items-center gap-1.5 truncate">
+            <span className="font-handwritten text-xs text-neutral-500 truncate">
+              by {event.organizer}
+            </span>
+            {isAuthor && (
+              <span className="text-[9px] font-bold text-amber-900 bg-amber-200/90 border border-amber-400/80 px-1.5 py-0.2 rounded-2xs uppercase tracking-tight">
+                Your Post
+              </span>
+            )}
+          </div>
 
           {/* Status indicators */}
           {isGoing && (

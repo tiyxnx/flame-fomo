@@ -60,11 +60,14 @@ export const EventDetailModal: React.FC = () => {
     .replace(/\[FEE:\s*[^\]]+\]/g, '')
     .trim();
 
-  // Allow creator, or any logged-in student organizer to edit/delete
-  const canManage = Boolean(
+  // Allow only the author who posted the event to edit or delete it
+  const isAuthor = Boolean(
     isAuthenticated && 
-    (event.submitted_by === user?.flame_email || !event.submitted_by || event.submitted_by.includes('flame.edu.in'))
+    user?.flame_email && 
+    event.submitted_by && 
+    event.submitted_by.toLowerCase().trim() === user.flame_email.toLowerCase().trim()
   );
+  const canManage = isAuthor;
 
   const handleAction = (type: 'going' | 'save' | 'fav') => {
     if (!isAuthenticated) {

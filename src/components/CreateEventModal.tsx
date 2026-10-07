@@ -28,9 +28,12 @@ import {
   Wand2,
   RefreshCw,
   Trash2,
-  AlertCircle
+  AlertCircle,
+  FileDown,
+  Sparkles as SparklesIcon
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { parseAnnouncement, ParseFieldStatus } from '@/lib/announcementParser';
 
 const CURATED_PRESETS = [
   { label: '🎸 Live Music', url: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=600&q=80' },
@@ -80,6 +83,11 @@ export const CreateEventModal: React.FC = () => {
   const [imageTab, setImageTab] = useState<'ai' | 'upload' | 'preset' | 'url'>('ai');
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+
+  // Smart Auto-Fill from Announcement State
+  const [rawPasteText, setRawPasteText] = useState('');
+  const [parseResults, setParseResults] = useState<{ filledCount: number; statuses: ParseFieldStatus[] } | null>(null);
+  const [isPasteSectionOpen, setIsPasteSectionOpen] = useState(!eventToEdit);
 
   // Pre-fill when editing or initialize fresh
   useEffect(() => {
@@ -146,9 +154,44 @@ export const CreateEventModal: React.FC = () => {
       setStatus('Upcoming');
       setImageTab('ai');
       setIsCustomRoom(false);
+      setRawPasteText('');
+      setParseResults(null);
     }
     setErrorMsg('');
   }, [eventToEdit, isCreateEventOpen, user]);
+
+  const handleSmartAutoFill = () => {
+    if (!rawPasteText.trim()) return;
+    const result = parseAnnouncement(rawPasteText);
+
+    if (result.data.eventName) setEventName(result.data.eventName);
+    if (result.data.category) setCategory(result.data.category);
+    if (result.data.date) setDate(result.data.date);
+    if (result.data.timeStart) setTimeStart(result.data.timeStart);
+    if (result.data.timeEnd) setTimeEnd(result.data.timeEnd);
+    if (result.data.venueZone) {
+      setVenueZone(result.data.venueZone);
+      if (result.data.roomSpecific) {
+        setRoomSpecific(result.data.roomSpecific);
+      }
+    }
+    if (result.data.organizer) setOrganizer(result.data.organizer);
+    if (result.data.description) setDescription(result.data.description);
+    if (result.data.registrationFee) setRegistrationFee(result.data.registrationFee);
+    if (result.data.registrationLink) setRegistrationLink(result.data.registrationLink);
+    if (result.data.registrationDeadlineDate) setRegistrationDeadlineDate(result.data.registrationDeadlineDate);
+    if (result.data.registrationDeadlineTime) setRegistrationDeadlineTime(result.data.registrationDeadlineTime);
+    if (result.data.requirementsEligibility) setRequirementsEligibility(result.data.requirementsEligibility);
+
+    setParseResults({
+      filledCount: result.filledCount,
+      statuses: result.statuses,
+    });
+
+    try {
+      confetti({ particleCount: 35, spread: 50, origin: { y: 0.45 } });
+    } catch {}
+  };
 
   if (!isCreateEventOpen) return null;
 
@@ -351,10 +394,99 @@ export const CreateEventModal: React.FC = () => {
           </p>
         </div>
 
-        {errorMsg && (
-          <div className="p-3 bg-red-100 border border-red-300 rounded-xs text-xs text-red-800 mb-4 flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
-            <span>{errorMsg}</span>
+        {/* SMART PASTE / AUTO-FILL CARD */}
+        {!isEditing && (
+          <div className="mb-6 p-4 bg-gradient-to-r from-[#fdfbf6] via-[#faf5e8] to-[#f4eee0] border-2 border-dashed border-[#d4c5a5] rounded-sm shadow-xs font-sans-ui">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-full bg-amber-200/80 text-amber-900">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-xs uppercase tracking-wider text-neutral-900">
+                    Smart Auto-Fill from Announcement
+                  </h3>
+                  <p className="text-[11px] text-neutral-600">
+                    Paste an email or club notice — title, date, time, fee, links & details will auto-fill!
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsPasteSectionOpen(!isPasteSectionOpen)}
+                className="text-xs text-neutral-600 hover:text-neutral-900 font-semibold underline"
+              >
+                {isPasteSectionOpen ? 'Collapse' : 'Expand'}
+              </button>
+            </div>
+
+            {isPasteSectionOpen && (
+              <div className="mt-3 space-y-2.5 animate-fade-in">
+                <textarea
+                  rows={4}
+                  value={rawPasteText}
+                  onChange={(e) => setRawPasteText(e.target.value)}
+                  placeholder="Paste email announcement or message here... (e.g. 'From: The Anime Club... Bunkasai on 23rd October 6:00 pm to 11:00 pm at Plaza... Price: Rs. 3540... Form: https://forms.gle/...')"
+                  className="w-full p-2.5 bg-white border border-[#d6cbb0] rounded text-xs text-neutral-900 placeholder:text-neutral-400 font-sans-ui focus:outline-none focus:border-[#c93b2b]"
+                />
+
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <button
+                    type="button"
+                    onClick={handleSmartAutoFill}
+                    disabled={!rawPasteText.trim()}
+                    className="px-4 py-2 bg-[#c93b2b] hover:bg-[#b02e20] disabled:bg-neutral-300 disabled:text-neutral-500 text-white font-bold text-xs rounded shadow-xs flex items-center gap-2 transition-all active:scale-95"
+                  >
+                    <Wand2 className="w-3.5 h-3.5" />
+                    <span>Auto-Fill Form</span>
+                  </button>
+
+                  {rawPasteText.trim() && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setRawPasteText('');
+                        setParseResults(null);
+                      }}
+                      className="text-xs text-neutral-500 hover:text-neutral-800 underline"
+                    >
+                      Clear Text
+                    </button>
+                  )}
+                </div>
+
+                {/* Auto-fill field status breakdown */}
+                {parseResults && (
+                  <div className="mt-3 p-3 bg-white/95 border border-[#c9bfa7] rounded text-xs space-y-2 animate-fade-in shadow-2xs">
+                    <div className="flex items-center justify-between border-b border-neutral-200/80 pb-1.5">
+                      <span className="font-bold text-neutral-900 flex items-center gap-1.5">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                        <span>Auto-Fill Summary:</span>
+                      </span>
+                      <span className="text-xs font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full">
+                        {parseResults.filledCount} fields populated
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5 text-[11px] pt-1">
+                      {parseResults.statuses.map((st, i) => (
+                        <div key={i} className="flex items-start gap-1.5 leading-snug">
+                          {st.success ? (
+                            <span className="text-emerald-600 font-bold shrink-0">✓</span>
+                          ) : (
+                            <span className="text-amber-600 font-bold shrink-0">⚠️</span>
+                          )}
+                          <span className={st.success ? 'text-neutral-800' : 'text-amber-900 font-medium'}>
+                            <strong className="text-neutral-700">{st.label}:</strong> {st.value}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 
