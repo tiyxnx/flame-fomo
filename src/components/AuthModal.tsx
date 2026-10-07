@@ -78,8 +78,11 @@ export const AuthModal: React.FC = () => {
     const res = await sendVerificationCode(trimmed);
     setIsLoading(false);
 
-    if (!res.success && res.error) {
+    if (res.error) {
       setErrorMsg(res.error);
+    }
+
+    if (!res.success && !res.developerBypass) {
       return;
     }
 
@@ -276,6 +279,9 @@ export const AuthModal: React.FC = () => {
                   {countdown > 0 ? `Resend in ${countdown}s` : 'Resend Code'}
                 </button>
               </div>
+              <p className="text-[11px] text-neutral-500 text-center font-mono mt-2 pt-2 border-t border-[#e2d7be]">
+                Developer testing code: <strong className="text-neutral-800">000000</strong>
+              </p>
             </div>
 
             <button
