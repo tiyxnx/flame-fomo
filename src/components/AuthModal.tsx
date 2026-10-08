@@ -233,14 +233,21 @@ export const AuthModal: React.FC = () => {
             </button>
           </form>
         ) : (
-          /* SCREEN 2: Magic Link Sent */
+          /* SCREEN 2: Magic Link Sent OR Bypass */
           <form onSubmit={handleVerifyCode} className="space-y-4">
-            <div className="p-5 bg-emerald-50 border border-emerald-200 rounded-sm text-sm text-emerald-900 leading-relaxed text-center shadow-inner">
-              <Sparkles className="w-6 h-6 text-emerald-600 mx-auto mb-2" />
-              <span className="font-bold text-base block mb-1">✨ Magic Link Sent!</span> 
-              We've sent a direct login link to <strong>{email}</strong>.<br/><br/>
-              Simply click the link in your email to instantly enter the Campus Planner!
-            </div>
+            {!errorMsg ? (
+              <div className="p-5 bg-emerald-50 border border-emerald-200 rounded-sm text-sm text-emerald-900 leading-relaxed text-center shadow-inner">
+                <Sparkles className="w-6 h-6 text-emerald-600 mx-auto mb-2" />
+                <span className="font-bold text-base block mb-1">✨ Magic Link Sent!</span> 
+                We've sent a direct login link to <strong>{email}</strong>.<br/><br/>
+                Simply click the link in your email to instantly enter the Campus Planner!
+              </div>
+            ) : (
+              <div className="p-4 bg-amber-50 border border-amber-200 rounded-sm text-xs text-amber-900 leading-relaxed text-center">
+                <span className="font-bold block mb-1">⚠️ Email Sending Failed</span> 
+                We could not send the email because of an SMTP configuration error. You can still log in using the manual bypass code below.
+              </div>
+            )}
 
             <div className="mt-6 pt-4 border-t border-neutral-200">
               <div className="flex items-center justify-between mb-2">

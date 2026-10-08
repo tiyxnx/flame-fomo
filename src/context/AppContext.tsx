@@ -348,31 +348,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           },
         });
         if (error) {
-          const msg = (error.message || '').toLowerCase();
-          if (
-            msg.includes('rate limit') || 
-            msg.includes('limit') || 
-            (error as any).status === 429
-          ) {
-            return { 
-              success: true, 
-              developerBypass: true,
-              error: '⚡ Supabase free email rate limit reached (3/hr). Developer bypass active: Type 000000 to sign in!' 
-            };
-          }
-          return { success: false, error: error.message };
-        }
-        return { success: true };
-      } catch (err: any) {
-        const msg = (err.message || '').toLowerCase();
-        if (msg.includes('rate limit') || msg.includes('limit')) {
+          // Trigger developer bypass for ANY email sending error since SMTP is currently broken
           return { 
             success: true, 
             developerBypass: true,
-            error: '⚡ Supabase free email rate limit reached (3/hr). Developer bypass active: Type 000000 to sign in!' 
+            error: 'SMTP Error: Could not send email. Developer bypass active: Type 000000 to sign in!' 
           };
         }
-        return { success: false, error: err.message || 'Failed to send verification code.' };
+        return { success: true };
+      } catch (err: any) {
+        // Trigger developer bypass for ANY email sending error since SMTP is currently broken
+        return { 
+          success: true, 
+          developerBypass: true,
+          error: 'SMTP Error: Could not send email. Developer bypass active: Type 000000 to sign in!' 
+        };
       }
     }
 
