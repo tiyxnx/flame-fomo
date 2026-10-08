@@ -77,8 +77,8 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
 
   const isRegistrationClosed = event.status === 'Registration Closed' || isPastDeadline;
 
-  // Apply grayscale if registration closed and user is not attending
-  const applyGrayscaleFilter = isRegistrationClosed && !isGoing;
+  // Apply grayscale only for events that are over
+  const applyGrayscaleFilter = isCompleted;
 
   // Determine tilt style
   const tiltClasses = ['tilt-1', 'tilt-n1', 'tilt-2', 'tilt-n2', 'tilt-1'];
@@ -206,10 +206,16 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
         {/* Registration Deadline Banner / Stamp */}
         {event.registration_deadline && !isCancelled && !isTentative && (
           <div className="absolute bottom-2 right-2 z-10">
-            <span className="stamp-urgent">
-              <span>Deadline:</span>
-              <span>{event.registration_deadline.split(' ')[0]}</span>
-            </span>
+            {isPastDeadline ? (
+              <span className="inline-block px-2 py-1 text-[10px] font-bold uppercase tracking-wider bg-neutral-900/90 text-neutral-400 border border-neutral-700 backdrop-blur-xs rounded-xs transform rotate-[-2deg]">
+                Deadline Passed
+              </span>
+            ) : (
+              <span className="stamp-urgent">
+                <span>Deadline:</span>
+                <span>{event.registration_deadline.split(' ')[0]}</span>
+              </span>
+            )}
           </div>
         )}
 

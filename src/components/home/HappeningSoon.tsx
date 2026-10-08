@@ -17,7 +17,7 @@ export const HappeningSoon: React.FC<{ eventsProp?: import('@/types').EventItem[
 
   // Filter events happening soon (upcoming or today onwards)
   const upcomingEvents = events
-    .filter((e) => e.status !== 'Cancelled' && e.date >= todayStr)
+    .filter((e) => e.status !== 'Cancelled' && e.status !== 'Completed' && e.date >= todayStr)
     .sort((a, b) => a.date.localeCompare(b.date))
     .slice(0, 7);
 
