@@ -72,7 +72,10 @@ export const ProfileView: React.FC = () => {
 
   // Tab 3: Events user published
   const userEmail = (user.flame_email || '').toLowerCase().trim();
+  const isAdmin = userEmail === 'tiyana.shah@flame.edu.in';
+  
   const submittedEvents = events.filter((e) => {
+    if (isAdmin) return true;
     const author = (e.submitted_by || '').toLowerCase().trim();
     return author === userEmail || (author.length > 0 && author === userEmail.split('@')[0]);
   });
@@ -160,7 +163,7 @@ export const ProfileView: React.FC = () => {
                   className="flex items-center gap-1 text-amber-200 hover:text-amber-100 hover:underline transition-colors"
                 >
                   <FileEdit className="w-3.5 h-3.5 text-amber-400" />
-                  <strong>{submittedEvents.length}</strong> Posted Events
+                  <strong>{submittedEvents.length}</strong> {isAdmin ? 'Total Events' : 'Posted Events'}
                 </button>
               </div>
             </div>
@@ -213,7 +216,7 @@ export const ProfileView: React.FC = () => {
           }`}
         >
           <FileEdit className="w-4 h-4" />
-          <span>3. Events You&apos;ve Posted ({submittedEvents.length})</span>
+          <span>3. {isAdmin ? `Admin Dashboard (${submittedEvents.length})` : `Events You've Posted (${submittedEvents.length})`}</span>
         </button>
       </div>
 
@@ -498,8 +501,8 @@ export const ProfileView: React.FC = () => {
           ) : (
             <div className="space-y-4">
               <div className="flex items-center justify-between text-xs text-neutral-400 px-1">
-                <span>Manage and edit the events you have published to the campus bulletin</span>
-                <span className="text-amber-300 font-bold">{submittedEvents.length} Published</span>
+                <span>{isAdmin ? 'Admin access: manage any event on the platform' : 'Manage and edit the events you have published to the campus bulletin'}</span>
+                <span className="text-amber-300 font-bold">{submittedEvents.length} {isAdmin ? 'Total Events' : 'Published'}</span>
               </div>
 
               {submittedEvents.map((evt) => (
