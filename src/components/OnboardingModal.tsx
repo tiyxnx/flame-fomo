@@ -21,7 +21,8 @@ import {
   Plus, 
   Trash2, 
   BookOpen, 
-  Clock 
+  Clock,
+  Edit3
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -45,6 +46,8 @@ export const OnboardingModal: React.FC = () => {
   const [newTimeStart, setNewTimeStart] = useState('10:30');
   const [newTimeEnd, setNewTimeEnd] = useState('11:45');
   const [newRoom, setNewRoom] = useState('');
+  
+  const [editingClassId, setEditingClassId] = useState<string | null>(null);
 
   if (!isOnboardingOpen || !user) return null;
 
@@ -76,6 +79,10 @@ export const OnboardingModal: React.FC = () => {
 
   const removeClass = (id: string) => {
     setTimetable(timetable.filter((c) => c.id !== id));
+  };
+
+  const handleEditChange = (id: string, field: keyof ClassScheduleItem, value: string) => {
+    setTimetable(timetable.map(c => c.id === id ? { ...c, [field]: value } : c));
   };
 
   const handleFinish = () => {
@@ -245,28 +252,86 @@ export const OnboardingModal: React.FC = () => {
             {/* List of current enrolled slots */}
             <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
               {timetable.map((cls) => (
-                <div
-                  key={cls.id}
-                  className="flex items-center justify-between p-2.5 bg-white border border-[#e0d6be] rounded-sm text-xs"
-                >
-                  <div className="flex items-center gap-2">
-                    <BookOpen className="w-3.5 h-3.5 text-[#c93b2b]" />
-                    <span className="font-bold text-neutral-900">{cls.courseName}</span>
+                editingClassId === cls.id ? (
+                  <div key={cls.id} className="flex flex-col gap-2 p-2.5 bg-amber-50 border border-amber-300 rounded-sm w-full shadow-sm animate-fade-in">
+                    <div className="flex gap-2">
+                      <input 
+                         value={cls.courseName} 
+                         onChange={e => handleEditChange(cls.id, 'courseName', e.target.value)}
+                         placeholder="Course Name"
+                         className="flex-1 p-1.5 text-xs bg-white border border-amber-200 rounded text-neutral-900" 
+                      />
+                      <input 
+                         value={cls.room || ''} 
+                         onChange={e => handleEditChange(cls.id, 'room', e.target.value)}
+                         placeholder="Location"
+                         className="w-1/3 p-1.5 text-xs bg-white border border-amber-200 rounded text-neutral-900" 
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <select 
+                         value={cls.day} 
+                         onChange={e => handleEditChange(cls.id, 'day', e.target.value as any)}
+                         className="p-1.5 text-xs bg-white border border-amber-200 rounded text-neutral-900 flex-1" 
+                      >
+                        {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map(d => (
+                          <option key={d} value={d}>{d}</option>
+                        ))}
+                      </select>
+                      <input 
+                         type="time" value={cls.timeStart} 
+                         onChange={e => handleEditChange(cls.id, 'timeStart', e.target.value)}
+                         className="p-1.5 text-xs bg-white border border-amber-200 rounded text-neutral-900" 
+                      />
+                      <input 
+                         type="time" value={cls.timeEnd} 
+                         onChange={e => handleEditChange(cls.id, 'timeEnd', e.target.value)}
+                         className="p-1.5 text-xs bg-white border border-amber-200 rounded text-neutral-900" 
+                      />
+                      <button 
+                        onClick={() => setEditingClassId(null)} 
+                        className="p-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded flex items-center justify-center transition-colors"
+                      >
+                        <Check className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
+                ) : (
+                  <div
+                    key={cls.id}
+                    className="flex items-center justify-between p-2.5 bg-white border border-[#e0d6be] rounded-sm text-xs"
+                  >
+                    <div className="flex items-center gap-2">
+                      <BookOpen className="w-3.5 h-3.5 text-[#c93b2b]" />
+                      <span className="font-bold text-neutral-900">{cls.courseName}</span>
+                      <span className="text-neutral-500">({cls.room || 'No location'})</span>
+                    </div>
 
-                  <div className="flex items-center gap-3">
-                    <span className="text-[11px] text-neutral-600 font-mono">
-                      {cls.day} {cls.timeStart}-{cls.timeEnd}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => removeClass(cls.id)}
-                      className="text-red-500 hover:text-red-700 p-1"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                    <div className="flex items-center gap-3">
+                      <span className="text-[11px] text-neutral-600 font-mono">
+                        {cls.day.substring(0, 3).toUpperCase()} {cls.timeStart}-{cls.timeEnd}
+                      </span>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => setEditingClassId(cls.id)}
+                          className="text-amber-600 hover:text-amber-800 p-1 bg-amber-50 rounded transition-colors"
+                          title="Edit Class"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeClass(cls.id)}
+                          className="text-red-500 hover:text-red-700 p-1 bg-red-50 rounded transition-colors"
+                          title="Remove Class"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                )
               ))}
             </div>
 
