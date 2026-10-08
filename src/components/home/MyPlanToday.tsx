@@ -92,26 +92,29 @@ export const MyPlanToday: React.FC<{ eventsProp?: import('@/types').EventItem[] 
   }
 
   return (
-    <div className="relative bg-[#201c18] border border-[#3b3327] rounded-sm p-5 sm:p-6 shadow-xl mb-8 text-neutral-100 select-none">
+    <div 
+      className="relative bg-gradient-to-br from-[#fef5cd] to-[#f4e296] border border-[#e3ce84] rounded-sm p-5 sm:p-6 mb-8 text-amber-950 select-none transform rotate-[1deg] hover:rotate-0 transition-transform duration-300"
+      style={{ boxShadow: '0 10px 30px rgba(0,0,0,0.15)' }}
+    >
       
       {/* Decorative Washi Tape */}
       <div 
-        className="absolute -top-3 left-8 w-24 h-5 bg-[#f3da90]/80 shadow-xs rotate-[-2deg] pointer-events-none"
+        className="absolute -top-3 left-1/2 -translate-x-1/2 w-32 h-6 bg-[#e5c276]/90 shadow-xs rotate-[-2deg] pointer-events-none"
         style={{ clipPath: 'polygon(3% 0%, 97% 2%, 100% 98%, 0% 96%)' }}
       />
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-[#383025] mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-amber-700/20 mb-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 bg-[#f3da90] text-neutral-950 text-[10px] font-black uppercase tracking-wider rounded-xs">
-              Priority 2 · Day Planner
+            <span className="px-2 py-0.5 bg-[#c93b2b] text-white text-[10px] font-black uppercase tracking-wider rounded-xs shadow-sm">
+              Priority 2 · Agenda
             </span>
-            <span className="text-xs text-[#a89a83] font-handwritten text-base">
-              today&apos;s schedule
+            <span className="text-xs text-amber-800 font-handwritten text-base">
+              today&apos;s sticky note
             </span>
           </div>
-          <h3 className="font-editorial text-2xl font-bold text-[#f5ebd7] mt-0.5">
+          <h3 className="font-editorial text-2xl font-bold text-amber-950 mt-0.5">
             My Plan Today · {todayDayName}
           </h3>
         </div>
@@ -119,7 +122,7 @@ export const MyPlanToday: React.FC<{ eventsProp?: import('@/types').EventItem[] 
         {isAuthenticated && (
           <button
             onClick={() => setCurrentTab('my-plan')}
-            className="text-xs font-semibold text-amber-200 hover:text-amber-100 flex items-center gap-1"
+            className="text-xs font-bold text-amber-700 hover:text-amber-900 flex items-center gap-1"
           >
             <span>Open Full Week Planner</span>
             <ChevronRight className="w-3.5 h-3.5" />
@@ -129,14 +132,14 @@ export const MyPlanToday: React.FC<{ eventsProp?: import('@/types').EventItem[] 
 
       {/* Content */}
       {!isAuthenticated ? (
-        <div className="py-8 px-4 text-center bg-[#29241e] border border-dashed border-[#473e31] rounded-xs">
-          <div className="mx-auto w-12 h-12 bg-amber-950/60 text-amber-300 rounded-full flex items-center justify-center mb-3 border border-amber-500/30">
+        <div className="py-8 px-4 text-center bg-amber-50/50 border border-dashed border-amber-300 rounded-xs">
+          <div className="mx-auto w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mb-3 border border-amber-200">
             <Lock className="w-6 h-6" />
           </div>
-          <h4 className="font-editorial text-lg font-bold text-amber-100">
+          <h4 className="font-editorial text-lg font-bold text-amber-950">
             Sign In to Unlock &ldquo;My Plan Today&rdquo;
           </h4>
-          <p className="text-xs text-[#a89b87] max-w-sm mx-auto mt-1 mb-4 font-sans-ui">
+          <p className="text-xs text-amber-800 max-w-sm mx-auto mt-1 mb-4 font-sans-ui">
             Connect your FLAME student email to automatically merge your daily academic lectures with campus club events and performances.
           </p>
           <button
@@ -147,8 +150,8 @@ export const MyPlanToday: React.FC<{ eventsProp?: import('@/types').EventItem[] 
           </button>
         </div>
       ) : timelineItems.length === 0 ? (
-        <div className="py-6 text-center text-xs text-[#a89b87] bg-[#29241e] rounded-xs border border-[#3b3327]">
-          <p className="font-editorial text-base text-amber-200 mb-1">Your Schedule is Clear for Today!</p>
+        <div className="py-6 text-center text-xs text-amber-800 bg-amber-50/50 rounded-xs border border-amber-200">
+          <p className="font-editorial text-base text-amber-950 mb-1 font-bold">Your Schedule is Clear for Today!</p>
           <p>No lectures or committed events scheduled today. Check out upcoming events below to fill your evening.</p>
         </div>
       ) : (
@@ -166,35 +169,35 @@ export const MyPlanToday: React.FC<{ eventsProp?: import('@/types').EventItem[] 
                 }}
                 className={`p-3 sm:p-3.5 rounded-xs border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
                   isClass
-                    ? 'bg-[#26221d] border-[#42382b] text-neutral-200'
-                    : 'bg-[#2e261f] border-amber-500/40 text-amber-100 shadow-md cursor-pointer hover:border-amber-400'
+                    ? 'bg-white/60 border-amber-200 text-amber-950'
+                    : 'bg-white border-amber-300 text-amber-950 shadow-md cursor-pointer hover:border-amber-400 hover:shadow-lg'
                 }`}
               >
                 {/* Time Badge & Title */}
                 <div className="flex items-start sm:items-center gap-3">
-                  <div className="px-2.5 py-1 bg-black/40 border border-white/10 rounded-xs font-mono text-xs text-amber-200 shrink-0">
+                  <div className="px-2.5 py-1 bg-amber-100 border border-amber-200 rounded-xs font-mono text-xs text-amber-900 font-bold shrink-0">
                     {item.timeStart} - {item.timeEnd}
                   </div>
 
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className={`text-[10px] px-1.5 py-0.2 rounded uppercase font-bold tracking-wider ${
+                      <span className={`text-[10px] px-1.5 py-0.2 rounded uppercase font-bold tracking-wider shadow-sm ${
                         isClass
-                          ? 'bg-blue-900/60 text-blue-200 border border-blue-700/50'
+                          ? 'bg-blue-100 text-blue-800 border border-blue-200'
                           : 'bg-[#c93b2b] text-white'
                       }`}>
                         {item.categoryOrCourse}
                       </span>
                     </div>
-                    <h4 className="font-editorial text-base font-bold text-neutral-100 mt-0.5">
+                    <h4 className="font-editorial text-base font-bold text-amber-950 mt-0.5">
                       {item.title}
                     </h4>
                   </div>
                 </div>
 
                 {/* Location */}
-                <div className="flex items-center gap-1.5 text-xs text-[#b8ab96] shrink-0 font-sans-ui">
-                  <MapPin className="w-3.5 h-3.5 text-[#e25845]" />
+                <div className="flex items-center gap-1.5 text-xs text-amber-700 shrink-0 font-sans-ui font-semibold">
+                  <MapPin className="w-3.5 h-3.5 text-[#c93b2b]" />
                   <span>{item.location}</span>
                 </div>
               </div>

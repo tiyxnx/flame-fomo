@@ -17,6 +17,7 @@ import { CreateEventModal } from '@/components/CreateEventModal';
 import { EventDetailModal } from '@/components/EventDetailModal';
 import { ClashModal } from '@/components/ClashModal';
 import { ExternalRegModal } from '@/components/ExternalRegModal';
+import { InAppReminder } from '@/components/InAppReminder';
 
 export default function App() {
   const { currentTab, isAuthenticated, openAuthModal } = useApp();
@@ -46,6 +47,7 @@ export default function App() {
       <EventDetailModal />
       <ClashModal />
       <ExternalRegModal />
+      <InAppReminder />
 
       {/* Editorial Footer */}
       <footer className="border-t border-[#312b23] bg-[#141210] py-8 text-neutral-400 text-xs select-none">
