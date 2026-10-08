@@ -39,6 +39,7 @@ export const MyPlanToday: React.FC<{ eventsProp?: import('@/types').EventItem[] 
 
   const [todayDateString, setTodayDateString] = useState('2026-10-07');
   const [todayDayName, setTodayDayName] = useState<'Sunday' | 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday'>('Wednesday');
+  const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
     const today = new Date();
@@ -93,8 +94,13 @@ export const MyPlanToday: React.FC<{ eventsProp?: import('@/types').EventItem[] 
 
   return (
     <div 
-      className="relative bg-gradient-to-br from-[#fef5cd] to-[#f4e296] border border-[#e3ce84] rounded-sm p-5 sm:p-6 mb-8 text-amber-950 select-none transform rotate-[1deg] hover:rotate-0 transition-transform duration-300"
-      style={{ boxShadow: '0 10px 30px rgba(0,0,0,0.15)' }}
+      className="relative bg-gradient-to-br from-[#fef5cd] to-[#f4e296] border border-[#e3ce84] rounded-sm p-5 sm:p-6 mb-8 text-amber-950 select-none overflow-hidden transition-all duration-500 cursor-pointer"
+      style={{ 
+        boxShadow: isHovered ? '0 15px 40px rgba(0,0,0,0.2)' : '0 5px 15px rgba(0,0,0,0.1)',
+        transform: isHovered ? 'rotate(0deg)' : 'rotate(1deg)' 
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       
       {/* Decorative Washi Tape */}
@@ -103,26 +109,46 @@ export const MyPlanToday: React.FC<{ eventsProp?: import('@/types').EventItem[] 
         style={{ clipPath: 'polygon(3% 0%, 97% 2%, 100% 98%, 0% 96%)' }}
       />
 
+      {/* Folded Corner (Dog Ear) */}
+      <div 
+        className={`absolute top-0 right-0 w-[40px] h-[40px] bg-[#d9c47c] transition-all duration-500 origin-top-right rounded-bl-sm z-10 ${
+          isHovered ? 'opacity-0 scale-50 translate-x-2 -translate-y-2' : 'opacity-100 scale-100 shadow-[-3px_3px_8px_rgba(0,0,0,0.15)]'
+        }`}
+        style={{ clipPath: 'polygon(100% 0, 0 100%, 100% 100%)' }}
+      />
+      {/* Background corner cut to reveal page background behind it (pseudo-transparency hack via bg color match) */}
+      <div 
+        className={`absolute top-0 right-0 w-[41px] h-[41px] bg-[#ebe4d1] transition-all duration-500 origin-top-right z-0 ${
+          isHovered ? 'opacity-0 scale-50' : 'opacity-100 scale-100'
+        }`}
+        style={{ clipPath: 'polygon(100% 0, 0 0, 0 100%)' }}
+      />
+
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-amber-700/20 mb-4">
+      <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2 transition-all duration-500 ${isHovered ? 'pb-4 border-b border-amber-700/20 mb-4' : ''}`}>
         <div>
           <div className="flex items-center gap-2">
             <span className="px-2 py-0.5 bg-[#c93b2b] text-white text-[10px] font-black uppercase tracking-wider rounded-xs shadow-sm">
               Priority 2 · Agenda
             </span>
-            <span className="text-xs text-amber-800 font-handwritten text-base">
+            <span className={`text-xs text-amber-800 font-handwritten text-base transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0 hidden sm:inline-block'}`}>
               today&apos;s sticky note
             </span>
+            {!isHovered && (
+               <span className="text-xs text-[#c93b2b] font-bold ml-2 animate-pulse flex items-center gap-0.5 bg-red-100/50 px-2 py-0.5 rounded-full border border-red-200">
+                 Hover to unfold <ChevronRight className="w-3.5 h-3.5" />
+               </span>
+            )}
           </div>
           <h3 className="font-editorial text-2xl font-bold text-amber-950 mt-0.5">
             My Plan Today · {todayDayName}
           </h3>
         </div>
 
-        {isAuthenticated && (
+        {isAuthenticated && isHovered && (
           <button
-            onClick={() => setCurrentTab('my-plan')}
-            className="text-xs font-bold text-amber-700 hover:text-amber-900 flex items-center gap-1"
+            onClick={(e) => { e.stopPropagation(); setCurrentTab('my-plan'); }}
+            className="text-xs font-bold text-amber-700 hover:text-amber-900 flex items-center gap-1 animate-fade-in"
           >
             <span>Open Full Week Planner</span>
             <ChevronRight className="w-3.5 h-3.5" />
@@ -130,7 +156,8 @@ export const MyPlanToday: React.FC<{ eventsProp?: import('@/types').EventItem[] 
         )}
       </div>
 
-      {/* Content */}
+      {/* Foldable Content */}
+      <div className={`transition-all duration-700 ease-in-out overflow-hidden ${isHovered ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0 pointer-events-none'}`}>
       {!isAuthenticated ? (
         <div className="py-8 px-4 text-center bg-amber-50/50 border border-dashed border-amber-300 rounded-xs">
           <div className="mx-auto w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mb-3 border border-amber-200">
@@ -206,6 +233,7 @@ export const MyPlanToday: React.FC<{ eventsProp?: import('@/types').EventItem[] 
         </div>
       )}
 
+      </div>
     </div>
   );
 };

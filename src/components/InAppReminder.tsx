@@ -53,7 +53,7 @@ export const InAppReminder: React.FC = () => {
   if (!upcomingAlert) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 animate-bounce-short">
+    <div className="fixed top-20 right-6 z-50 animate-bounce-short">
       <div className="relative bg-[#c93b2b] text-white p-4 rounded shadow-2xl border-2 border-red-400 w-72 sm:w-80">
         
         {/* Push Pin */}
