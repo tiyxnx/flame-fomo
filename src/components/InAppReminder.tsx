@@ -6,16 +6,16 @@ import { BellRing, X } from 'lucide-react';
 
 export const InAppReminder: React.FC = () => {
   const { user, isAuthenticated, events, goingEventIds, openEventDetail } = useApp();
-  const [currentTime, setCurrentTime] = useState(new Date());
+  const [currentTime, setCurrentTime] = useState<Date | null>(null);
   const [dismissedItems, setDismissedItems] = useState<string[]>([]);
 
   useEffect(() => {
-    // Check every minute
+    setCurrentTime(new Date());
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
     return () => clearInterval(timer);
   }, []);
 
-  if (!isAuthenticated || !user) return null;
+  if (!isAuthenticated || !user || !currentTime) return null;
 
   const todayDateString = currentTime.toISOString().split('T')[0];
   const currentH = currentTime.getHours();
