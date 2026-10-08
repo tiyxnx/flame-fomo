@@ -62,18 +62,18 @@ export const FloatingPlanWidget: React.FC = () => {
   // if (timelineItems.length === 0) return null; // Removed early return so user always sees the widget
 
   return (
-    <div className="fixed bottom-6 right-6 z-40">
+    <div className="fixed bottom-6 left-6 z-40">
       <div 
         className="relative bg-gradient-to-br from-[#fef5cd] to-[#f4e296] border border-[#e3ce84] text-amber-950 shadow-2xl transition-all duration-500 overflow-hidden"
         style={{ 
           width: isHovered ? '320px' : '64px',
           height: isHovered ? 'auto' : '64px',
           maxHeight: isHovered ? '600px' : '64px',
-          borderTopLeftRadius: '0px',
           borderTopRightRadius: '4px',
-          borderBottomLeftRadius: '4px',
+          borderTopLeftRadius: '0px',
           borderBottomRightRadius: '4px',
-          transform: isHovered ? 'rotate(0deg)' : 'rotate(5deg)'
+          borderBottomLeftRadius: '4px',
+          transform: isHovered ? 'rotate(0deg)' : 'rotate(-5deg)'
         }}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
@@ -81,10 +81,10 @@ export const FloatingPlanWidget: React.FC = () => {
         
         {/* Folded Corner (Dog Ear) */}
         <div 
-          className={`absolute top-0 left-0 w-[30px] h-[30px] bg-[#d9c47c] transition-all duration-500 origin-top-left rounded-br-sm z-10 ${
-            isHovered ? 'opacity-0 scale-50 -translate-x-2 -translate-y-2' : 'opacity-100 scale-100 shadow-[3px_3px_5px_rgba(0,0,0,0.15)]'
+          className={`absolute top-0 right-0 w-[30px] h-[30px] bg-[#d9c47c] transition-all duration-500 origin-top-right rounded-bl-sm z-10 ${
+            isHovered ? 'opacity-0 scale-50 translate-x-2 -translate-y-2' : 'opacity-100 scale-100 shadow-[-3px_3px_5px_rgba(0,0,0,0.15)]'
           }`}
-          style={{ clipPath: 'polygon(0 0, 100% 100%, 0 100%)' }}
+          style={{ clipPath: 'polygon(100% 0, 0 100%, 100% 100%)' }}
         />
 
         {/* Small "Sign" State when folded */}
@@ -136,10 +136,10 @@ export const FloatingPlanWidget: React.FC = () => {
       
       {/* Label pointing to widget */}
       {!isHovered && (
-        <div className="absolute bottom-16 right-0 whitespace-nowrap animate-bounce-short pointer-events-none">
+        <div className="absolute bottom-16 left-0 whitespace-nowrap animate-bounce-short pointer-events-none">
           <div className="bg-[#c93b2b] text-white text-[10px] font-bold px-2 py-1 rounded shadow-md relative">
             Your Plan Today!
-            <div className="absolute -bottom-1 right-4 w-2 h-2 bg-[#c93b2b] rotate-45"></div>
+            <div className="absolute -bottom-1 left-4 w-2 h-2 bg-[#c93b2b] rotate-45"></div>
           </div>
         </div>
       )}
