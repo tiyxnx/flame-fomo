@@ -348,20 +348,39 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           },
         });
         if (error) {
-          // Trigger developer bypass for ANY email sending error since SMTP is currently broken
+          const msg = (error.message || '').toLowerCase();
+          if (
+            msg.includes('rate limit') || 
+            msg.includes('limit') || 
+            (error as any).status === 429
+          ) {
+            return { 
+              success: true, 
+              developerBypass: true,
+              error: '⚡ Supabase free email rate limit reached (3/hr). Developer bypass active: Type 000000 to sign in!' 
+            };
+          }
+          // Fallback bypass for any other errors
           return { 
             success: true, 
             developerBypass: true,
-            error: 'SMTP Error: Could not send email. Developer bypass active: Type 000000 to sign in!' 
+            error: `Email Error: ${error.message}. Developer bypass active: Type 000000 to sign in!` 
           };
         }
         return { success: true };
       } catch (err: any) {
-        // Trigger developer bypass for ANY email sending error since SMTP is currently broken
+        const msg = (err.message || '').toLowerCase();
+        if (msg.includes('rate limit') || msg.includes('limit')) {
+          return { 
+            success: true, 
+            developerBypass: true,
+            error: '⚡ Supabase free email rate limit reached (3/hr). Developer bypass active: Type 000000 to sign in!' 
+          };
+        }
         return { 
           success: true, 
           developerBypass: true,
-          error: 'SMTP Error: Could not send email. Developer bypass active: Type 000000 to sign in!' 
+          error: `Email Error: ${err.message || 'Unknown'}. Developer bypass active: Type 000000 to sign in!` 
         };
       }
     }
