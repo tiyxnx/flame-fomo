@@ -59,7 +59,7 @@ export const ProfileView: React.FC = () => {
   const [newDays, setNewDays] = useState<('Sunday' | 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday')[]>(['Monday']);
   const [newTimeStart, setNewTimeStart] = useState('14:15');
   const [newTimeEnd, setNewTimeEnd] = useState('15:30');
-  const [newRoom, setNewRoom] = useState('Chanakya Hall 2');
+  const [newRoom, setNewRoom] = useState('');
 
   const [savedSuccessMsg, setSavedSuccessMsg] = useState('');
 
@@ -91,11 +91,12 @@ export const ProfileView: React.FC = () => {
       day: day,
       timeStart: newTimeStart,
       timeEnd: newTimeEnd,
-      room: newRoom.trim(),
+      room: newRoom.trim() || 'Academics',
       venueZone: 'Academics',
     }));
     setTimetable([...timetable, ...newItems]);
     setNewCourseName('');
+    setNewRoom('');
   };
 
   const removeClass = (id: string) => {
@@ -316,7 +317,7 @@ export const ProfileView: React.FC = () => {
               <span className="text-xs font-bold uppercase tracking-wider text-neutral-400">
                 Add Enrolled Course Slot
               </span>
-              <div className="grid grid-cols-1 gap-2 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                 <input
                   type="text"
                   placeholder="Course Name"
@@ -324,7 +325,16 @@ export const ProfileView: React.FC = () => {
                   onChange={(e) => setNewCourseName(e.target.value)}
                   className="p-2 bg-[#201c18] border border-[#42392d] rounded text-neutral-100"
                 />
+                <input
+                  type="text"
+                  placeholder="Location (e.g. Chanakya Hall 2)"
+                  value={newRoom}
+                  onChange={(e) => setNewRoom(e.target.value)}
+                  className="p-2 bg-[#201c18] border border-[#42392d] rounded text-neutral-100"
+                />
+              </div>
 
+              <div className="grid grid-cols-1 gap-2 text-xs">
                 {/* Multiple Day Selection */}
                 <div className="flex flex-wrap gap-1.5 mt-1 mb-2">
                   {(['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] as const).map((d) => (

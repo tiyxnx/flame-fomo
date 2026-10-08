@@ -44,7 +44,7 @@ export const OnboardingModal: React.FC = () => {
   const [newDays, setNewDays] = useState<('Sunday' | 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday')[]>(['Monday']);
   const [newTimeStart, setNewTimeStart] = useState('10:30');
   const [newTimeEnd, setNewTimeEnd] = useState('11:45');
-  const [newRoom, setNewRoom] = useState('Kalidas Centre 101');
+  const [newRoom, setNewRoom] = useState('');
 
   if (!isOnboardingOpen || !user) return null;
 
@@ -65,12 +65,13 @@ export const OnboardingModal: React.FC = () => {
       day: day,
       timeStart: newTimeStart,
       timeEnd: newTimeEnd,
-      room: newRoom.trim(),
+      room: newRoom.trim() || 'Academics',
       venueZone: 'Academics',
     }));
     
     setTimetable([...timetable, ...newClasses]);
     setNewCourseName('');
+    setNewRoom('');
   };
 
   const removeClass = (id: string) => {
@@ -274,7 +275,7 @@ export const OnboardingModal: React.FC = () => {
               <div className="text-xs font-bold uppercase tracking-wider text-neutral-700">
                 Add Another Course / Class
               </div>
-              <div className="grid grid-cols-1 gap-2 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                 <input
                   type="text"
                   placeholder="Course Name (e.g. Media Ethics)"
@@ -282,7 +283,17 @@ export const OnboardingModal: React.FC = () => {
                   onChange={(e) => setNewCourseName(e.target.value)}
                   className="p-2 bg-white border border-[#d6cbb0] rounded text-neutral-900"
                 />
+                
+                <input
+                  type="text"
+                  placeholder="Location (e.g. Chanakya Hall 2)"
+                  value={newRoom}
+                  onChange={(e) => setNewRoom(e.target.value)}
+                  className="p-2 bg-white border border-[#d6cbb0] rounded text-neutral-900"
+                />
+              </div>
 
+              <div className="grid grid-cols-1 gap-2 text-xs">
                 {/* Multiple Day Selection */}
                 <div className="flex flex-wrap gap-1.5 mt-1">
                   {(['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] as const).map((d) => (
