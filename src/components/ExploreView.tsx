@@ -101,6 +101,18 @@ export const ExploreView: React.FC = () => {
       }
 
       return true;
+    }).sort((a, b) => {
+      const todayString = new Date().toISOString().split('T')[0];
+      const aCompleted = a.status === 'Completed' || a.date < todayString;
+      const bCompleted = b.status === 'Completed' || b.date < todayString;
+
+      if (aCompleted && !bCompleted) return 1;
+      if (!aCompleted && bCompleted) return -1;
+      
+      if (!aCompleted && !bCompleted) {
+        return a.date.localeCompare(b.date);
+      }
+      return b.date.localeCompare(a.date);
     });
   }, [events, searchQuery, selectedCategory, timeFilter, fitsMyScheduleOnly, isAuthenticated, user, todayStr, tomorrowStr]);
 

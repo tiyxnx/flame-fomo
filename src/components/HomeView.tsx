@@ -57,6 +57,18 @@ export const HomeView: React.FC = () => {
       if (!match) return false;
     }
     return true;
+  }).sort((a, b) => {
+    const todayStr = new Date().toISOString().split('T')[0];
+    const aCompleted = a.status === 'Completed' || a.date < todayStr;
+    const bCompleted = b.status === 'Completed' || b.date < todayStr;
+
+    if (aCompleted && !bCompleted) return 1;
+    if (!aCompleted && bCompleted) return -1;
+    
+    if (!aCompleted && !bCompleted) {
+      return a.date.localeCompare(b.date);
+    }
+    return b.date.localeCompare(a.date);
   });
 
   return (
