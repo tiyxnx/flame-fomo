@@ -17,22 +17,25 @@ export const FloatingPlanWidget: React.FC = () => {
     setTodayDayName(dayNames[today.getDay()]);
   }, []);
 
-  if (!isAuthenticated || !user) return null;
+  // Removed early return for unauthenticated users
+  // if (!isAuthenticated || !user) return null;
 
   // Compile timeline items
   const timelineItems: any[] = [];
   
-  for (const cls of user.academic_timetable || []) {
-    if (cls.day === todayDayName) {
-      timelineItems.push({
-        id: cls.id,
-        type: 'class',
-        title: cls.courseName,
-        timeStart: cls.timeStart,
-        timeEnd: cls.timeEnd,
-        location: cls.room || cls.venueZone || 'Academics',
-        categoryOrCourse: 'Class',
-      });
+  if (user) {
+    for (const cls of user.academic_timetable || []) {
+      if (cls.day === todayDayName) {
+        timelineItems.push({
+          id: cls.id,
+          type: 'class',
+          title: cls.courseName,
+          timeStart: cls.timeStart,
+          timeEnd: cls.timeEnd,
+          location: cls.room || cls.venueZone || 'Academics',
+          categoryOrCourse: 'Class',
+        });
+      }
     }
   }
 
@@ -56,10 +59,10 @@ export const FloatingPlanWidget: React.FC = () => {
 
   timelineItems.sort((a, b) => (a.timeStart || '').localeCompare(b.timeStart || ''));
 
-  if (timelineItems.length === 0) return null;
+  // if (timelineItems.length === 0) return null; // Removed early return so user always sees the widget
 
   return (
-    <div className="fixed bottom-6 right-6 z-40 hidden sm:block">
+    <div className="fixed bottom-6 right-6 z-40">
       <div 
         className="relative bg-gradient-to-br from-[#fef5cd] to-[#f4e296] border border-[#e3ce84] text-amber-950 shadow-2xl transition-all duration-500 overflow-hidden"
         style={{ 
@@ -100,20 +103,32 @@ export const FloatingPlanWidget: React.FC = () => {
           </div>
 
           <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
-            {timelineItems.map((item, index) => (
-              <div key={index} className="p-2 bg-white/60 border border-amber-200 rounded-xs flex gap-2">
-                <div className="text-[10px] font-mono font-bold text-amber-800 shrink-0 mt-0.5">
-                  {item.timeStart}
-                </div>
-                <div>
-                  <h5 className="text-xs font-bold leading-tight">{item.title}</h5>
-                  <div className="flex items-center gap-1 text-[10px] text-amber-700 mt-1">
-                    <MapPin className="w-2.5 h-2.5 text-red-600" />
-                    <span className="truncate max-w-[150px]">{item.location}</span>
+            {!isAuthenticated ? (
+              <div className="text-center p-4 bg-amber-50/50 rounded border border-amber-200">
+                <p className="text-xs font-bold text-amber-900 mb-1">Sign in required</p>
+                <p className="text-[10px] text-amber-700">Connect your FLAME student email to unlock your personalized daily schedule!</p>
+              </div>
+            ) : timelineItems.length === 0 ? (
+              <div className="text-center p-4 bg-amber-50/50 rounded border border-amber-200">
+                <p className="text-xs font-bold text-amber-900 mb-1">Schedule Clear!</p>
+                <p className="text-[10px] text-amber-700">You have no classes or committed events today. Explore the map to find something to do!</p>
+              </div>
+            ) : (
+              timelineItems.map((item, index) => (
+                <div key={index} className="p-2 bg-white/60 border border-amber-200 rounded-xs flex gap-2">
+                  <div className="text-[10px] font-mono font-bold text-amber-800 shrink-0 mt-0.5">
+                    {item.timeStart}
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-bold leading-tight">{item.title}</h5>
+                    <div className="flex items-center gap-1 text-[10px] text-amber-700 mt-1">
+                      <MapPin className="w-2.5 h-2.5 text-red-600" />
+                      <span className="truncate max-w-[150px]">{item.location}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
 
