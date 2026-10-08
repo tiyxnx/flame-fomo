@@ -119,6 +119,11 @@ export const EventDetailModal: React.FC = () => {
           <span className="text-xs text-neutral-500 font-handwritten text-base">
             organized by {event.organizer}
           </span>
+          {event.submitted_by && (
+            <span className="px-2 py-0.5 bg-neutral-100 border border-neutral-200 text-neutral-500 text-[10px] rounded-xs font-mono" title="Posted by">
+              {event.submitted_by}
+            </span>
+          )}
           {isCancelled && (
             <span className="px-2.5 py-0.5 bg-red-100 border border-red-400 text-red-700 text-xs font-bold uppercase rounded-xs">
               Event Cancelled

@@ -288,27 +288,36 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
         </div>
 
         {/* Organizer annotation in handwritten font */}
-        <div className="flex items-center justify-between pt-1 border-t border-neutral-200/80">
-          <div className="flex items-center gap-1.5 truncate">
-            <span className="font-handwritten text-xs text-neutral-500 truncate">
-              by {event.organizer}
-            </span>
-            {isAuthor && (
-              <span className="text-[9px] font-bold text-amber-900 bg-amber-200/90 border border-amber-400/80 px-1.5 py-0.2 rounded-2xs uppercase tracking-tight">
-                Your Post
+        <div className="flex flex-col pt-1 border-t border-neutral-200/80">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5 truncate">
+              <span className="font-handwritten text-xs text-neutral-500 truncate">
+                by {event.organizer}
               </span>
-            )}
-          </div>
+              {isAuthor && (
+                <span className="text-[9px] font-bold text-amber-900 bg-amber-200/90 border border-amber-400/80 px-1.5 py-0.2 rounded-2xs uppercase tracking-tight">
+                  Your Post
+                </span>
+              )}
+            </div>
 
-          {/* Status indicators */}
-          {isGoing && (
-            <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full flex items-center gap-0.5">
-              <Check className="w-2.5 h-2.5" /> Added to Plan
-            </span>
-          )}
-          {isSaved && !isGoing && (
-            <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full flex items-center gap-0.5">
-              <Bookmark className="w-2.5 h-2.5 fill-amber-800" /> Bookmarked
+            {/* Status indicators */}
+            <div className="flex items-center gap-1 shrink-0">
+              {isGoing && (
+                <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full flex items-center gap-0.5">
+                  <Check className="w-2.5 h-2.5" /> Added
+                </span>
+              )}
+              {isSaved && !isGoing && (
+                <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full flex items-center gap-0.5">
+                  <Bookmark className="w-2.5 h-2.5 fill-amber-800" /> Saved
+                </span>
+              )}
+            </div>
+          </div>
+          {event.submitted_by && (
+            <span className="text-[9px] text-neutral-400 font-sans-ui mt-0.5 truncate">
+              Posted by: {event.submitted_by}
             </span>
           )}
         </div>
