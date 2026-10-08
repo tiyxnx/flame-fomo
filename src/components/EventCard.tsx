@@ -58,7 +58,18 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
     event.requirements_eligibility?.includes('[TENTATIVE]')
   );
 
-  const isCompleted = event.status === 'Completed';
+  const [todayStr, setTodayStr] = React.useState('');
+  React.useEffect(() => {
+    const today = new Date();
+    // Adjust to local date string yyyy-mm-dd
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    setTodayStr(`${year}-${month}-${day}`);
+  }, []);
+
+  const isDatePassed = todayStr ? event.date < todayStr : false;
+  const isCompleted = event.status === 'Completed' || isDatePassed;
   const averageRating = (event.ratings?.length || 0) > 0 
     ? (event.ratings!.reduce((sum: number, r: any) => sum + r.score, 0) / event.ratings!.length).toFixed(1)
     : null;
