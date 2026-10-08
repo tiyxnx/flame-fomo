@@ -578,6 +578,7 @@ export const ProfileView: React.FC = () => {
                       <option value="Upcoming">Upcoming</option>
                       <option value="Registration Closed">Registration Closed</option>
                       <option value="Cancelled">Cancelled</option>
+                      <option value="Completed">Completed / Event Closed</option>
                     </select>
 
                     <button

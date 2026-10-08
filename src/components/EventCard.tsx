@@ -40,12 +40,18 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
   const isGoing = goingEventIds.includes(event.id);
   const isFavCategory = favouriteCategories.includes(event.category);
   const isCancelled = event.status === 'Cancelled';
+  const isAdmin = Boolean(
+    isAuthenticated && 
+    user?.flame_email && 
+    user.flame_email.toLowerCase().trim() === 'tiyana.shah@flame.edu.in'
+  );
   const isAuthor = Boolean(
     isAuthenticated &&
     user?.flame_email &&
     event.submitted_by &&
     event.submitted_by.toLowerCase().trim() === user.flame_email.toLowerCase().trim()
   );
+  const canEdit = isAuthor || isAdmin;
   const isTentative = Boolean(
     event.is_tentative || 
     event.time_start_end?.toLowerCase().includes('tentative') ||
@@ -248,8 +254,8 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
             <span>{isSaved ? 'Saved' : 'Save'}</span>
           </button>
 
-          {/* Quick Edit (Only shown to event author) */}
-          {isAuthor && (
+          {/* Quick Edit (Only shown to event author or admin) */}
+          {canEdit && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
