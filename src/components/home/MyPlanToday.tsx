@@ -24,16 +24,18 @@ interface TimelineItem {
   originalEventId?: string;
 }
 
-export const MyPlanToday: React.FC = () => {
+export const MyPlanToday: React.FC<{ eventsProp?: import('@/types').EventItem[] }> = ({ eventsProp }) => {
   const { 
     user, 
     isAuthenticated, 
-    events, 
+    events: contextEvents, 
     goingEventIds, 
     openAuthModal, 
     openEventDetail,
     setCurrentTab 
   } = useApp();
+  
+  const events = eventsProp || contextEvents;
 
   const [todayDateString, setTodayDateString] = useState('2026-10-07');
   const [todayDayName, setTodayDayName] = useState<'Sunday' | 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday'>('Wednesday');

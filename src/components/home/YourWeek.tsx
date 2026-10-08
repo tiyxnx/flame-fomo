@@ -6,8 +6,9 @@ import { Calendar, BookOpen, Sparkles, ChevronRight } from 'lucide-react';
 
 const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-export const YourWeek: React.FC = () => {
-  const { user, isAuthenticated, events, goingEventIds, setCurrentTab } = useApp();
+export const YourWeek: React.FC<{ eventsProp?: import('@/types').EventItem[] }> = ({ eventsProp }) => {
+  const { user, isAuthenticated, events: contextEvents, goingEventIds, setCurrentTab } = useApp();
+  const events = eventsProp || contextEvents;
 
   const days: ('Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday')[] = [
     'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'

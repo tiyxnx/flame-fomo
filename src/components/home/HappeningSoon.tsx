@@ -5,8 +5,9 @@ import { useApp } from '@/context/AppContext';
 import { EventCard } from '../EventCard';
 import { ChevronLeft, ChevronRight, Flame } from 'lucide-react';
 
-export const HappeningSoon: React.FC = () => {
-  const { events } = useApp();
+export const HappeningSoon: React.FC<{ eventsProp?: import('@/types').EventItem[] }> = ({ eventsProp }) => {
+  const { events: contextEvents } = useApp();
+  const events = eventsProp || contextEvents;
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const [todayStr, setTodayStr] = React.useState('2026-10-07');

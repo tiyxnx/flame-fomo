@@ -131,16 +131,16 @@ export const HomeView: React.FC = () => {
       </div>
 
       {/* 6.1 Priority 1: Don't Forget (Red paper-slip module displaying single most urgent deadline) */}
-      <DontForget />
+      <DontForget eventsProp={displayedEvents} />
 
       {/* 6.1 Priority 2: My Plan Today (Planner-style chronological list of today's committed events & classes) */}
-      <MyPlanToday />
+      <MyPlanToday eventsProp={displayedEvents} />
 
       {/* 6.1 Priority 3: Happening Soon (Horizontally scrollable row of upcoming event Polaroids) */}
-      <HappeningSoon />
+      <HappeningSoon eventsProp={displayedEvents} />
 
       {/* 6.1 Your Week: Compact Monday-Friday preview showing event/class counts per day */}
-      <YourWeek />
+      <YourWeek eventsProp={displayedEvents} />
 
       {/* Discovery Board Grid */}
       <div className="pt-4 border-t border-[#3b3327]">

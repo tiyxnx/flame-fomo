@@ -4,8 +4,9 @@ import React from 'react';
 import { useApp } from '@/context/AppContext';
 import { AlertCircle, Clock, ExternalLink, Calendar, MapPin, Sparkles } from 'lucide-react';
 
-export const DontForget: React.FC = () => {
-  const { events, openEventDetail } = useApp();
+export const DontForget: React.FC<{ eventsProp?: import('@/types').EventItem[] }> = ({ eventsProp }) => {
+  const { events: contextEvents, openEventDetail } = useApp();
+  const events = eventsProp || contextEvents;
 
   // Find the single most urgent registration deadline among upcoming events
   const urgentEvent = events
