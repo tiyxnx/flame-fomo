@@ -156,12 +156,12 @@ export const AuthModal: React.FC = () => {
             <span className="font-editorial text-2xl font-black">F</span>
           </div>
           <h2 className="font-editorial text-2xl font-bold text-neutral-900">
-            {authStep === 'email' ? 'FLAME Student Access' : 'Enter Verification Code'}
+            {authStep === 'email' ? 'FLAME Student Access' : 'Check Your Email'}
           </h2>
           <p className="text-xs text-neutral-600 font-sans-ui mt-1 max-w-xs mx-auto">
             {authStep === 'email' 
               ? (authModalReason || 'Sign in with your FLAME email to save this event and build your plan.')
-              : `We sent a confirmation code to ${email}`}
+              : `We sent a magic link to ${email}`}
           </p>
         </div>
 
@@ -226,23 +226,26 @@ export const AuthModal: React.FC = () => {
                 <span>Sending Code...</span>
               ) : (
                 <>
-                  <span>Send Verification Code</span>
+                  <span>Send Magic Link</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
             </button>
           </form>
         ) : (
-          /* SCREEN 2: 6-Digit OTP Verification */
+          /* SCREEN 2: Magic Link Sent */
           <form onSubmit={handleVerifyCode} className="space-y-4">
-            <div className="p-3 bg-amber-50 border border-amber-200 rounded text-xs text-amber-900 leading-relaxed">
-              <span className="font-bold">✉️ Email sent!</span> You can click the <strong>&ldquo;Confirm email address&rdquo;</strong> button directly in your email, or type the code below.
+            <div className="p-5 bg-emerald-50 border border-emerald-200 rounded-sm text-sm text-emerald-900 leading-relaxed text-center shadow-inner">
+              <Sparkles className="w-6 h-6 text-emerald-600 mx-auto mb-2" />
+              <span className="font-bold text-base block mb-1">✨ Magic Link Sent!</span> 
+              We've sent a direct login link to <strong>{email}</strong>.<br/><br/>
+              Simply click the link in your email to instantly enter the Campus Planner!
             </div>
 
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-700">
-                  6-Digit Email Code
+            <div className="mt-6 pt-4 border-t border-neutral-200">
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-neutral-500">
+                  Developer Bypass / Manual Code
                 </label>
                 <button
                   type="button"
@@ -254,21 +257,19 @@ export const AuthModal: React.FC = () => {
                 </button>
               </div>
 
-              <div className="relative">
+              <div className="relative opacity-60 hover:opacity-100 transition-opacity focus-within:opacity-100">
                 <KeyRound className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   maxLength={6}
-                  placeholder="123456"
+                  placeholder="000000"
                   value={otpCode}
                   onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
-                  className="w-full pl-9 pr-3.5 py-3 bg-white border-2 border-[#d6cbb0] rounded-sm text-center font-mono text-xl tracking-[0.3em] font-bold text-neutral-900 focus:outline-none focus:border-[#c93b2b] focus:ring-1 focus:ring-[#c93b2b]"
-                  autoFocus
-                  required
+                  className="w-full pl-9 pr-3.5 py-2 bg-white/50 border border-[#d6cbb0] rounded-sm text-center font-mono tracking-widest text-neutral-900 focus:outline-none focus:border-[#c93b2b] focus:bg-white"
                 />
               </div>
 
-              <div className="flex items-center justify-between mt-2 text-xs text-neutral-500">
+              <div className="flex items-center justify-between mt-3 text-xs text-neutral-500">
                 <span>Check spam if not in inbox</span>
                 <button
                   type="button"
@@ -276,28 +277,21 @@ export const AuthModal: React.FC = () => {
                   disabled={countdown > 0 || isLoading}
                   className="text-[#c93b2b] hover:underline font-semibold disabled:text-neutral-400 disabled:no-underline"
                 >
-                  {countdown > 0 ? `Resend in ${countdown}s` : 'Resend Code'}
+                  {countdown > 0 ? `Resend in ${countdown}s` : 'Resend Link'}
                 </button>
               </div>
-              <p className="text-[11px] text-neutral-500 text-center font-mono mt-2 pt-2 border-t border-[#e2d7be]">
-                Developer testing code: <strong className="text-neutral-800">000000</strong>
-              </p>
             </div>
 
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full py-2.5 bg-[#c93b2b] hover:bg-[#b02e20] text-amber-100 text-sm font-bold rounded-sm shadow-md transition-transform active:scale-95 flex items-center justify-center gap-2 disabled:opacity-60"
-            >
-              {isLoading ? (
-                <span>Verifying...</span>
-              ) : (
-                <>
-                  <span>Verify & Enter Campus Planner</span>
-                  <CheckCircle2 className="w-4 h-4" />
-                </>
-              )}
-            </button>
+            {/* We only need the submit button for manual/bypass code now */}
+            {otpCode.length === 6 && (
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full py-2 bg-neutral-800 hover:bg-black text-white text-xs uppercase tracking-wider font-bold rounded-sm shadow-md transition-transform active:scale-95 flex items-center justify-center gap-2 mt-2"
+              >
+                {isLoading ? 'Verifying...' : 'Use Manual Code'}
+              </button>
+            )}
           </form>
         )}
 

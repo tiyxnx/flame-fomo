@@ -344,6 +344,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           email: trimmed,
           options: {
             shouldCreateUser: true,
+            emailRedirectTo: typeof window !== 'undefined' ? window.location.origin : undefined,
           },
         });
         if (error) {
