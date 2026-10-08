@@ -41,7 +41,7 @@ export const OnboardingModal: React.FC = () => {
 
   // New class form state
   const [newCourseName, setNewCourseName] = useState('');
-  const [newDays, setNewDays] = useState<('Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday')[]>(['Monday']);
+  const [newDays, setNewDays] = useState<('Sunday' | 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday')[]>(['Monday']);
   const [newTimeStart, setNewTimeStart] = useState('10:30');
   const [newTimeEnd, setNewTimeEnd] = useState('11:45');
   const [newRoom, setNewRoom] = useState('Kalidas Centre 101');
@@ -285,7 +285,7 @@ export const OnboardingModal: React.FC = () => {
 
                 {/* Multiple Day Selection */}
                 <div className="flex flex-wrap gap-1.5 mt-1">
-                  {(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] as const).map((d) => (
+                  {(['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] as const).map((d) => (
                     <button
                       key={d}
                       type="button"

@@ -56,7 +56,7 @@ export const ProfileView: React.FC = () => {
 
   // New course input
   const [newCourseName, setNewCourseName] = useState('');
-  const [newDays, setNewDays] = useState<('Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday')[]>(['Monday']);
+  const [newDays, setNewDays] = useState<('Sunday' | 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday')[]>(['Monday']);
   const [newTimeStart, setNewTimeStart] = useState('14:15');
   const [newTimeEnd, setNewTimeEnd] = useState('15:30');
   const [newRoom, setNewRoom] = useState('Chanakya Hall 2');
@@ -327,7 +327,7 @@ export const ProfileView: React.FC = () => {
 
                 {/* Multiple Day Selection */}
                 <div className="flex flex-wrap gap-1.5 mt-1 mb-2">
-                  {(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] as const).map((d) => (
+                  {(['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] as const).map((d) => (
                     <button
                       key={d}
                       type="button"

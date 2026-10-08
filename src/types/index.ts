@@ -24,7 +24,7 @@ export type EventStatus = 'Upcoming' | 'Registration Closed' | 'Cancelled' | 'Te
 export interface ClassScheduleItem {
   id: string;
   courseName: string;
-  day: 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday';
+  day: 'Sunday' | 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday';
   timeStart: string; // e.g., "09:00"
   timeEnd: string;   // e.g., "10:15"
   venueZone?: VenueZone;
