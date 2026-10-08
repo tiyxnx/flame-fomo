@@ -321,9 +321,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
 
     saveUserToStorage(newUser);
-    if (isSupabaseConfigured()) {
-      supabase.from('profiles').upsert([newUser]).then();
-    }
     closeAuthModal();
     // Prompt onboarding for first time
     openOnboarding();

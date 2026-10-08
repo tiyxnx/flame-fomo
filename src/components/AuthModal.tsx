@@ -75,13 +75,20 @@ export const AuthModal: React.FC = () => {
     }
 
     setIsLoading(true);
-    // BYPASS OTP ENTIRELY to avoid Supabase SMTP limits completely!
-    const res = loginWithFlameEmail(trimmed, name);
+    const res = await sendVerificationCode(trimmed);
     setIsLoading(false);
 
     if (res.error) {
       setErrorMsg(res.error);
     }
+
+    if (!res.success && !res.developerBypass) {
+      return;
+    }
+
+    // Advance to OTP input screen
+    setAuthStep('code');
+    setCountdown(30);
   };
 
   // Step 2: Verify the 6-digit code
