@@ -56,7 +56,7 @@ export const ProfileView: React.FC = () => {
 
   // New course input
   const [newCourseName, setNewCourseName] = useState('');
-  const [newDay, setNewDay] = useState<'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday'>('Monday');
+  const [newDays, setNewDays] = useState<('Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday')[]>(['Monday']);
   const [newTimeStart, setNewTimeStart] = useState('14:15');
   const [newTimeEnd, setNewTimeEnd] = useState('15:30');
   const [newRoom, setNewRoom] = useState('Chanakya Hall 2');
@@ -84,17 +84,17 @@ export const ProfileView: React.FC = () => {
   };
 
   const addClass = () => {
-    if (!newCourseName.trim()) return;
-    const item: ClassScheduleItem = {
-      id: `class-${Date.now()}`,
+    if (!newCourseName.trim() || newDays.length === 0) return;
+    const newItems: ClassScheduleItem[] = newDays.map((day, index) => ({
+      id: `class-${Date.now()}-${index}`,
       courseName: newCourseName.trim(),
-      day: newDay,
+      day: day,
       timeStart: newTimeStart,
       timeEnd: newTimeEnd,
       room: newRoom.trim(),
       venueZone: 'Academics',
-    };
-    setTimetable([...timetable, item]);
+    }));
+    setTimetable([...timetable, ...newItems]);
     setNewCourseName('');
   };
 
@@ -316,7 +316,7 @@ export const ProfileView: React.FC = () => {
               <span className="text-xs font-bold uppercase tracking-wider text-neutral-400">
                 Add Enrolled Course Slot
               </span>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+              <div className="grid grid-cols-1 gap-2 text-xs">
                 <input
                   type="text"
                   placeholder="Course Name"
@@ -324,15 +324,30 @@ export const ProfileView: React.FC = () => {
                   onChange={(e) => setNewCourseName(e.target.value)}
                   className="p-2 bg-[#201c18] border border-[#42392d] rounded text-neutral-100"
                 />
-                <select
-                  value={newDay}
-                  onChange={(e) => setNewDay(e.target.value as any)}
-                  className="p-2 bg-[#201c18] border border-[#42392d] rounded text-neutral-100"
-                >
-                  {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].map((d) => (
-                    <option key={d} value={d}>{d}</option>
+
+                {/* Multiple Day Selection */}
+                <div className="flex flex-wrap gap-1.5 mt-1 mb-2">
+                  {(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] as const).map((d) => (
+                    <button
+                      key={d}
+                      type="button"
+                      onClick={() => {
+                        if (newDays.includes(d)) {
+                          setNewDays(newDays.filter(day => day !== d));
+                        } else {
+                          setNewDays([...newDays, d]);
+                        }
+                      }}
+                      className={`px-2 py-1 rounded text-[10px] font-bold uppercase transition-all ${
+                        newDays.includes(d) 
+                          ? 'bg-amber-300 text-neutral-900 border border-amber-400' 
+                          : 'bg-[#201c18] text-neutral-400 border border-[#42392d] hover:bg-[#2a2520]'
+                      }`}
+                    >
+                      {d.substring(0, 3)}
+                    </button>
                   ))}
-                </select>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
