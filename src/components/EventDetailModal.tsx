@@ -162,8 +162,8 @@ export const EventDetailModal: React.FC = () => {
               </div>
             </div>
             
-            {/* If user went to the event, let them rate it */}
-            {isGoing && isAuthenticated && (
+            {/* Let any authenticated user rate it */}
+            {isAuthenticated && (
               <div className="flex items-center gap-1">
                 <span className="text-xs font-bold text-amber-800 mr-1">Rate:</span>
                 {[1, 2, 3, 4, 5].map((star) => (

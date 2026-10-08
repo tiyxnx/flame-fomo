@@ -10,8 +10,8 @@ export const YourWeek: React.FC<{ eventsProp?: import('@/types').EventItem[] }> 
   const { user, isAuthenticated, events: contextEvents, goingEventIds, setCurrentTab } = useApp();
   const events = eventsProp || contextEvents;
 
-  const days: ('Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday')[] = [
-    'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'
+  const days: ('Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday')[] = [
+    'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'
   ];
 
   const [currentDayName, setCurrentDayName] = useState('Wednesday');
@@ -61,7 +61,7 @@ export const YourWeek: React.FC<{ eventsProp?: import('@/types').EventItem[] }> 
               Weekly Overview
             </span>
             <span className="text-xs text-[#a89a83] font-handwritten text-base">
-              mon &ndash; fri commitments
+              mon &ndash; sun commitments
             </span>
           </div>
           <h3 className="font-editorial text-2xl font-bold text-[#f5ebd7] mt-0.5">
@@ -78,8 +78,8 @@ export const YourWeek: React.FC<{ eventsProp?: import('@/types').EventItem[] }> 
         </button>
       </div>
 
-      {/* Monday - Friday Compact Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+      {/* Monday - Sunday Compact Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-7 gap-3">
         {days.map((day) => {
           const { classCount, eventCount } = getCountsForDay(day);
           const isToday = currentDayName === day;

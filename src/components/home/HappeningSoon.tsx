@@ -6,7 +6,7 @@ import { EventCard } from '../EventCard';
 import { ChevronLeft, ChevronRight, Flame } from 'lucide-react';
 
 export const HappeningSoon: React.FC<{ eventsProp?: import('@/types').EventItem[] }> = ({ eventsProp }) => {
-  const { events: contextEvents } = useApp();
+  const { events: contextEvents, savedEventIds } = useApp();
   const events = eventsProp || contextEvents;
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -18,7 +18,13 @@ export const HappeningSoon: React.FC<{ eventsProp?: import('@/types').EventItem[
   // Filter events happening soon (upcoming or today onwards)
   const upcomingEvents = events
     .filter((e) => e.status !== 'Cancelled' && e.status !== 'Completed' && e.date >= todayStr)
-    .sort((a, b) => a.date.localeCompare(b.date))
+    .sort((a, b) => {
+      const aSaved = savedEventIds.includes(a.id);
+      const bSaved = savedEventIds.includes(b.id);
+      if (aSaved && !bSaved) return -1;
+      if (!aSaved && bSaved) return 1;
+      return a.date.localeCompare(b.date);
+    })
     .slice(0, 7);
 
   const scroll = (direction: 'left' | 'right') => {

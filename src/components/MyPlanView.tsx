@@ -26,7 +26,7 @@ export const MyPlanView: React.FC = () => {
 
   const [selectedDayFilter, setSelectedDayFilter] = useState<string>('All');
 
-  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
   const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
   // All events user is going to
@@ -101,7 +101,7 @@ export const MyPlanView: React.FC = () => {
               : 'bg-[#221e1a] text-[#b8ab96] hover:bg-[#2e2822]'
           }`}
         >
-          All Week (Mon-Fri)
+          All Week (Mon-Sun)
         </button>
         {days.map((d) => (
           <button
