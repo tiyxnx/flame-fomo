@@ -16,64 +16,9 @@ import {
   Share2,
   Edit3,
   Trash2,
+  AlertTriangle,
   Ticket
 } from 'lucide-react';
-
-const parseTime = (event: any) => {
-  let startT = event.time_start;
-  let endT = event.time_end;
-  if (!startT || !endT) {
-    if (event.time_start_end && event.time_start_end.includes('-')) {
-      const parts = event.time_start_end.split('-');
-      startT = startT || parts[0].trim();
-      endT = endT || parts[1].trim();
-    } else {
-      startT = startT || '09:00';
-      endT = endT || '10:00';
-    }
-  }
-  const formatTime = (t: string) => {
-    const match = t?.match(/(\d+):(\d+)/);
-    if (match) {
-      let h = parseInt(match[1]);
-      let m = match[2];
-      if (t.toLowerCase().includes('pm') && h < 12) h += 12;
-      if (t.toLowerCase().includes('am') && h === 12) h = 0;
-      return `${h.toString().padStart(2, '0')}${m}00`;
-    }
-    return '090000';
-  };
-  return { startTimeStr: formatTime(startT), endTimeStr: formatTime(endT) };
-};
-
-const generateGoogleCalendarUrl = (event: any) => {
-  const startDateStr = (event.date || '').replace(/-/g, '');
-  const { startTimeStr, endTimeStr } = parseTime(event);
-  const dates = `${startDateStr}T${startTimeStr}/${startDateStr}T${endTimeStr}`;
-  const title = encodeURIComponent(event.event_name);
-  const location = encodeURIComponent(`${event.venue_zone}${event.room_specific ? ` - ${event.room_specific}` : ''}, FLAME University`);
-  const details = encodeURIComponent((event.description || '') + (event.registration_link ? `\n\nRegistration: ${event.registration_link}` : ''));
-  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dates}&details=${details}&location=${location}&ctz=Asia/Kolkata`;
-};
-
-const generateIcsDataUrl = (event: any) => {
-  const startDateStr = (event.date || '').replace(/-/g, '');
-  const { startTimeStr, endTimeStr } = parseTime(event);
-  const icsContent = `BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//FLAME FOMO//EN
-BEGIN:VEVENT
-UID:${event.id}@flamefomo.com
-DTSTAMP:${startDateStr}T000000Z
-DTSTART;TZID=Asia/Kolkata:${startDateStr}T${startTimeStr}
-DTEND;TZID=Asia/Kolkata:${startDateStr}T${endTimeStr}
-SUMMARY:${event.event_name}
-DESCRIPTION:${(event.description || '').replace(/\n/g, '\\n')}
-LOCATION:${event.venue_zone}${event.room_specific ? ` - ${event.room_specific}` : ''}, FLAME University
-END:VEVENT
-END:VCALENDAR`;
-  return `data:text/calendar;charset=utf8,${encodeURIComponent(icsContent)}`;
-};
 
 export const EventDetailModal: React.FC = () => {
   const {
@@ -462,31 +407,6 @@ export const EventDetailModal: React.FC = () => {
                 <MapPin className="w-3.5 h-3.5 text-[#c93b2b]" />
                 <span className="hidden sm:inline">Locate on Map</span>
               </button>
-            )}
-
-            {/* Add to Calendar Options */}
-            {isGoing && (
-              <div className="flex items-center gap-2">
-                <a
-                  href={generateIcsDataUrl(event)}
-                  download={`${event.event_name.replace(/[^a-z0-9]/gi, '_')}.ics`}
-                  className="px-3 py-2.5 rounded-full text-xs font-bold shadow-md transition-transform active:scale-95 flex items-center gap-1.5 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 border border-neutral-300"
-                >
-                  <Calendar className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Apple Calendar</span>
-                  <span className="sm:hidden">Apple</span>
-                </a>
-                <a
-                  href={generateGoogleCalendarUrl(event)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-3 py-2.5 rounded-full text-xs font-bold shadow-md transition-transform active:scale-95 flex items-center gap-1.5 bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200"
-                >
-                  <Calendar className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Google Calendar</span>
-                  <span className="sm:hidden">Google</span>
-                </a>
-              </div>
             )}
 
             {/* I'm Going */}
