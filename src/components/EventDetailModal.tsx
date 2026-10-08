@@ -16,9 +16,20 @@ import {
   Share2,
   Edit3,
   Trash2,
-  AlertTriangle,
   Ticket
 } from 'lucide-react';
+
+const generateGoogleCalendarUrl = (event: any) => {
+  const startDateStr = event.date.replace(/-/g, '');
+  const startTimeStr = (event.time_start || '00:00').replace(/:/g, '') + '00';
+  const endDateStr = event.date.replace(/-/g, ''); 
+  const endTimeStr = (event.time_end || '23:59').replace(/:/g, '') + '00'; 
+  const dates = `${startDateStr}T${startTimeStr}/${endDateStr}T${endTimeStr}`;
+  const title = encodeURIComponent(event.event_name);
+  const location = encodeURIComponent(`${event.venue_zone}${event.room_specific ? ` - ${event.room_specific}` : ''}, FLAME University`);
+  const details = encodeURIComponent(event.description + (event.registration_link ? `\n\nRegistration: ${event.registration_link}` : ''));
+  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dates}&details=${details}&location=${location}&ctz=Asia/Kolkata`;
+};
 
 export const EventDetailModal: React.FC = () => {
   const {
@@ -36,6 +47,7 @@ export const EventDetailModal: React.FC = () => {
     openEditEvent,
     deleteEvent,
     setCurrentTab,
+    updateEvent,
   } = useApp();
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -46,6 +58,13 @@ export const EventDetailModal: React.FC = () => {
   const isGoing = goingEventIds.includes(event.id);
   const isFav = favouriteCategories.includes(event.category);
   const isCancelled = event.status === 'Cancelled';
+  const isCompleted = event.status === 'Completed';
+  
+  const averageRating = (event.ratings?.length || 0) > 0 
+    ? (event.ratings!.reduce((sum: number, r: any) => sum + r.score, 0) / event.ratings!.length).toFixed(1)
+    : null;
+  const userRating = event.ratings?.find((r: any) => r.email === user?.flame_email)?.score || 0;
+
   const isTentative = Boolean(
     event.is_tentative || 
     event.time_start_end?.toLowerCase().includes('tentative') ||
@@ -129,12 +148,52 @@ export const EventDetailModal: React.FC = () => {
               Event Cancelled
             </span>
           )}
+          {isCompleted && (
+            <span className="px-2.5 py-0.5 bg-neutral-800 text-neutral-100 text-xs font-bold uppercase rounded-xs">
+              Completed
+            </span>
+          )}
         </div>
 
         {/* Title */}
         <h2 className="font-editorial text-2xl sm:text-3xl font-bold text-neutral-900 leading-tight mb-3">
           {event.event_name}
         </h2>
+
+        {/* Ratings block for Completed events */}
+        {isCompleted && (
+          <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-sm flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-amber-900 text-sm">Event Completed</span>
+              <span className="text-amber-300">|</span>
+              <div className="flex items-center gap-1">
+                <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                <span className="text-sm font-bold text-amber-900">{averageRating || 'No ratings yet'}</span>
+                <span className="text-xs text-amber-700">({event.ratings?.length || 0} reviews)</span>
+              </div>
+            </div>
+            
+            {/* If user went to the event, let them rate it */}
+            {isGoing && isAuthenticated && (
+              <div className="flex items-center gap-1">
+                <span className="text-xs font-bold text-amber-800 mr-1">Rate:</span>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    onClick={() => {
+                      const currentRatings = event.ratings || [];
+                      const newRatings = [...currentRatings.filter((r: any) => r.email !== user?.flame_email), { email: user!.flame_email, score: star }];
+                      updateEvent(event.id, { ratings: newRatings });
+                    }}
+                    className="p-0.5 transition-transform hover:scale-110 focus:outline-none"
+                  >
+                    <Star className={`w-4 h-4 ${star <= userRating ? 'fill-amber-500 text-amber-500' : 'text-neutral-300 hover:text-amber-400'}`} />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Tentative Schedule Banner */}
         {isTentative && (
@@ -164,8 +223,28 @@ export const EventDetailModal: React.FC = () => {
                 className="px-3 py-1.5 bg-white hover:bg-neutral-50 text-neutral-800 border border-neutral-300 rounded font-bold shadow-2xs flex items-center gap-1.5 transition-colors"
               >
                 <Edit3 className="w-3.5 h-3.5 text-amber-600" />
-                <span>Edit Event</span>
+                <span className="hidden sm:inline">Edit</span>
               </button>
+
+              {event.status !== 'Completed' && (
+                <button
+                  onClick={() => updateEvent(event.id, { status: 'Completed' })}
+                  className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded font-bold shadow-2xs flex items-center gap-1.5 transition-colors"
+                >
+                  <Check className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Mark Completed</span>
+                </button>
+              )}
+
+              {event.status !== 'Cancelled' && (
+                <button
+                  onClick={() => updateEvent(event.id, { status: 'Cancelled' })}
+                  className="px-3 py-1.5 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 border border-neutral-300 rounded font-bold shadow-2xs flex items-center gap-1.5 transition-colors"
+                >
+                  <AlertTriangle className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Cancel Event</span>
+                </button>
+              )}
 
               {showDeleteConfirm ? (
                 <div className="flex items-center gap-1.5 bg-red-50 p-1 rounded border border-red-200 animate-fade-in">
@@ -337,8 +416,22 @@ export const EventDetailModal: React.FC = () => {
                 className="px-3 py-2 text-xs font-semibold text-neutral-700 hover:text-neutral-900 flex items-center gap-1"
               >
                 <MapPin className="w-3.5 h-3.5 text-[#c93b2b]" />
-                <span>Locate on Map</span>
+                <span className="hidden sm:inline">Locate on Map</span>
               </button>
+            )}
+
+            {/* Add to Google Calendar */}
+            {isGoing && (
+              <a
+                href={generateGoogleCalendarUrl(event)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3 py-2.5 rounded-full text-xs sm:text-sm font-bold shadow-md transition-transform active:scale-95 flex items-center gap-2 bg-blue-100 hover:bg-blue-200 text-blue-900 border border-blue-300"
+              >
+                <Calendar className="w-4 h-4" />
+                <span className="hidden sm:inline">Add to Calendar</span>
+                <span className="sm:hidden">Calendar</span>
+              </a>
             )}
 
             {/* I'm Going */}

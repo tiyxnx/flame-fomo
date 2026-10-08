@@ -52,6 +52,11 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
     event.requirements_eligibility?.includes('[TENTATIVE]')
   );
 
+  const isCompleted = event.status === 'Completed';
+  const averageRating = (event.ratings?.length || 0) > 0 
+    ? (event.ratings!.reduce((sum: number, r: any) => sum + r.score, 0) / event.ratings!.length).toFixed(1)
+    : null;
+
   // Check if past deadline for Closed state
   const [isPastDeadline, setIsPastDeadline] = React.useState(false);
 
@@ -143,6 +148,16 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
       {isCancelled && (
         <div className="stamp-cancelled">
           CANCELLED
+        </div>
+      )}
+
+      {isCompleted && (
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex flex-col items-center justify-center p-3 bg-black/60 rounded backdrop-blur-sm pointer-events-none rotate-[-5deg] border border-neutral-700 shadow-xl">
+          <div className="flex items-center gap-1 mb-1">
+            <Star className={`w-5 h-5 ${averageRating ? 'text-amber-400 fill-amber-400' : 'text-neutral-400'}`} />
+            {averageRating && <span className="text-white font-bold text-lg">{averageRating}</span>}
+          </div>
+          <span className="text-neutral-200 text-[10px] font-bold uppercase tracking-widest">Completed</span>
         </div>
       )}
 

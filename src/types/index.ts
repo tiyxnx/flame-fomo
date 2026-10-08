@@ -19,7 +19,7 @@ export type VenueZone =
   | 'Flora & Fauna'
   | 'Shantiniketan/Recreational';
 
-export type EventStatus = 'Upcoming' | 'Registration Closed' | 'Cancelled' | 'Tentative';
+export type EventStatus = 'Upcoming' | 'Registration Closed' | 'Cancelled' | 'Tentative' | 'Completed';
 
 export interface ClassScheduleItem {
   id: string;
@@ -64,6 +64,7 @@ export interface EventItem {
   tentative_note?: string;
   registration_fee?: string; // e.g. "Free" or "₹200" or "₹3,540"
   submitted_by?: string; // user email if UGC
+  ratings?: { email: string; score: number }[]; // Array of ratings
   created_at?: string;
 }
 
