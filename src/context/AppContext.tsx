@@ -62,6 +62,7 @@ interface AppContextType {
 
   // User Actions
   loginAsGuest: () => void;
+  loginWithGoogle: () => Promise<void>;
   loginWithFlameEmail: (email: string, name?: string) => { success: boolean; error?: string };
   sendVerificationCode: (email: string) => Promise<{ success: boolean; developerBypass?: boolean; error?: string }>;
   verifyOtpCode: (email: string, code: string, name?: string) => Promise<{ success: boolean; error?: string }>;
@@ -297,6 +298,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const loginAsGuest = () => {
     saveUserToStorage(null);
     closeAuthModal();
+  };
+
+  const loginWithGoogle = async () => {
+    if (isSupabaseConfigured()) {
+      try {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            queryParams: {
+              // Optionally restrict to flame.edu.in here, or handle it in the callback
+              hd: 'flame.edu.in'
+            }
+          }
+        });
+        if (error) {
+          console.error('Google OAuth error:', error.message);
+        }
+      } catch (e) {
+        console.error('Error initiating Google OAuth:', e);
+      }
+    } else {
+      console.warn('Supabase not configured for OAuth');
+    }
   };
 
   const loginWithFlameEmail = (email: string, name = 'FLAME Scholar') => {
@@ -723,6 +747,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         externalRegEvent,
         closeExternalRegModal,
         loginAsGuest,
+        loginWithGoogle,
         loginWithFlameEmail,
         sendVerificationCode,
         verifyOtpCode,
